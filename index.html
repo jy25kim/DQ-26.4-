@@ -113,6 +113,31 @@ tbody td{padding:8px 10px;color:#1A1A2E;vertical-align:middle;white-space:nowrap
 @keyframes loading{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
 .footer{text-align:center;padding:18px;color:#CCC;font-size:11px}
+.anomaly-summary-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+.active-filter-bar{background:#EEF2FF;border:1px solid #C5CAE9;border-radius:8px;padding:6px 14px;font-size:12px;color:#3949AB;font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.active-filter-bar button{border:none;background:none;color:#3949AB;cursor:pointer;font-size:14px;line-height:1}
+.name-link{color:#3949AB;font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.name-link:hover{color:#1A237E}
+.modal-backdrop{position:fixed;inset:0;background:rgba(26,26,46,0.45);z-index:1000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.modal-box{background:#fff;border-radius:16px;width:660px;max-width:96vw;max-height:88vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(26,26,46,0.2)}
+.modal-header{padding:18px 22px 14px;border-bottom:1px solid #EAECF0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-header h3{font-size:15px;font-weight:700;color:#1A1A2E;margin:0}
+.modal-close{border:none;background:none;font-size:22px;cursor:pointer;color:#888;line-height:1;padding:2px 8px;border-radius:4px}
+.modal-close:hover{background:#F5F5F5}
+.modal-body{padding:18px 22px;overflow-y:auto;flex:1}
+.modal-stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.modal-stat{background:#F8F9FF;border-radius:10px;padding:12px 14px;text-align:center}
+.modal-stat-val{font-size:22px;font-weight:700;color:#1A1A2E}
+.modal-stat-label{font-size:10px;color:#888;margin-top:3px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.modal-mini-chart{margin-bottom:16px}
+.modal-table{width:100%;border-collapse:collapse;font-size:12.5px}
+.modal-table th{padding:6px 10px;text-align:left;font-size:10px;font-weight:700;color:#888;letter-spacing:.05em;text-transform:uppercase;border-bottom:1px solid #EAECF0}
+.modal-table td{padding:7px 10px;border-bottom:1px solid #F4F4F8;vertical-align:middle}
+.modal-table tr:last-child td{border-bottom:none}
+.modal-reason-input{width:100%;border:1px solid #E0E0E8;border-radius:5px;padding:3px 7px;font-size:11.5px;font-family:inherit;resize:none;color:#1A1A2E;background:#fff}
+.modal-reason-input:focus{outline:none;border-color:#3949AB}
+.modal-reason-input.saved{border-color:#1D9E75;background:#F0FBF5}
+.modal-save-btn{font-size:10px;padding:2px 7px;border-radius:4px;border:none;background:#3949AB;color:#fff;cursor:pointer;margin-left:3px;white-space:nowrap}
 #fileInput{display:none}
 </style>
 <script id="static-data-injection">
@@ -142,10 +167,10 @@ window.__REASONS__     = {"강동준_2025-12_12-05":"폭설로 인한 출근시�
   </div>
   <div style="display:flex;align-items:center;gap:12px">
     <span class="upload-status" id="uploadStatus">2025-12 ~ 2026-04 · 21명</span>
-    <button id="exportHtmlBtn" onclick="exportStaticHtml()" style="font-size: 12px; font-weight: 600; padding: 8px 16px; border-radius: 8px; border-width: medium; border-style: none; border-color: currentcolor; border-image: initial; background: rgb(23, 132, 95); color: rgb(255, 255, 255); cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 6px; transition: background 0.15s;" onmouseover="this.style.background='#17845f'" onmouseout="this.style.background='#1D9E75'" disabled="">⏳ 생성 중...</button>
+    <button id="exportHtmlBtn" onclick="exportStaticHtml()" style="display: flex; font-size: 11px; font-weight: 500; padding: 5px 12px; border-radius: 6px; border: 1px solid rgb(136, 136, 136); background: rgb(240, 240, 240); color: rgb(85, 85, 85); cursor: pointer; white-space: nowrap; align-items: center; gap: 5px; transition: 0.15s;" onmouseover="this.style.background='#f0f0f0';this.style.color='#555'" onmouseout="this.style.background='transparent';this.style.color='#999'" disabled="">⏳ 생성 중...</button>
     <div class="upload-zone-mini" id="uploadZoneMini" onclick="document.getElementById('fileInput').click()" style="display: none;">
       <span class="upload-icon">📂</span>
-      <div><span>다른 파일 불러오기</span><br><strong id="currentFileName">근태 대시보드용 로우 데이터_누적.xlsx</strong></div>
+      <div><span>다른 파일 불러오기</span><br><strong id="currentFileName">DQ 대시보드용 로우 데이터_누적.xlsx</strong></div>
     </div>
   </div>
 </div>
@@ -197,6 +222,63 @@ window.__REASONS__     = {"강동준_2025-12_12-05":"폭설로 인한 출근시�
       <div class="card"><div class="card-title">전사 일평균 근로시간 추이</div><div style="position:relative;height:220px"><canvas id="trendDaily" width="957" height="396" style="display: block; box-sizing: border-box; height: 220px; width: 531px;"></canvas></div></div>
       <div class="card"><div class="card-title">전사 인당 월평균 연장근로 추이</div><div style="position:relative;height:220px"><canvas id="trendOt" width="957" height="396" style="display: block; box-sizing: border-box; height: 220px; width: 531px;"></canvas></div></div>
     </div>
+    <!-- 초과근로수당 섹션 -->
+    <div class="full-card" id="otAllowanceSection" style="display: block;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div class="card-title" style="margin-bottom:0">
+          초과근로수당 현황
+          <span style="font-size:11px;font-weight:400;color:#AAA;margin-left:6px">초과근로 발생월 기준</span>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:18px">
+        <div class="kpi" style="padding:14px 16px">
+          <div class="kpi-label">총 지급액</div>
+          <div class="kpi-value" id="otAllow-total" style="font-size:20px">11,169원</div>
+          <div class="kpi-sub" id="otAllow-month">26년 04월 초과근로</div>
+        </div>
+        <div class="kpi" style="padding:14px 16px">
+          <div class="kpi-label">지급 대상 인원</div>
+          <div class="kpi-value" id="otAllow-count" style="font-size:20px">1</div>
+          <div class="kpi-sub">명</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#555;margin-bottom:8px">월별 지급액 추이</div>
+          <div style="position:relative;height:160px"><canvas id="otAllowMonthChart" width="994" height="288" style="display: block; box-sizing: border-box; height: 160px; width: 552px;"></canvas></div>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#555;margin-bottom:8px">조직별 지급액</div>
+          <div style="display:flex;align-items:center;gap:12px;height:160px">
+            <div style="position:relative;flex:1;height:100%"><canvas id="otAllowOrgChart" width="720" height="288" style="display: block; box-sizing: border-box; height: 160px; width: 400px;"></canvas></div>
+            <div id="otAllowOrgLegend" style="font-size:11px;min-width:140px;line-height:2"><div style="display:flex;align-items:center;gap:6px;white-space:nowrap">
+      <div style="width:10px;height:10px;border-radius:2px;background:#8B5CF6;flex-shrink:0"></div>
+      <span style="color:#333;font-size:11px">아트앤테크팀</span>
+      <span style="color:#999;padding-left:4px;font-size:11px">11,169원</span>
+    </div></div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:12px;font-weight:600;color:#555;margin-bottom:8px">조직별 상세</div>
+      <table>
+        <thead>
+          <tr>
+            <th>조직</th><th class="ctr">초과근로월</th>
+            <th class="num">대상 인원</th>
+            <th class="num">지급액 합계</th>
+            <th class="num">인당 평균</th>
+          </tr>
+        </thead>
+        <tbody id="otAllowTb"><tr style="background:#F8F9FF">
+      <td><span class="chip cb">아트앤테크팀</span></td>
+      <td class="ctr">26년 04월</td>
+      <td class="num">1명</td>
+      <td class="num" style="font-weight:600">11,169원</td>
+      <td class="num">11,169원</td>
+    </tr></tbody>
+      </table>
+    </div>
+
     <div class="full-card">
       <div class="card-title">월별 전사 요약</div>
       <table><thead><tr><th>월</th><th class="num">일평균 근로(h)</th><th class="num">인당 월연장(h)</th><th class="num">인당 사용연차(개)</th></tr></thead><tbody id="overviewTb"><tr><td style="font-weight:600">25년 12월</td>
@@ -221,8 +303,8 @@ window.__REASONS__     = {"강동준_2025-12_12-05":"폭설로 인한 출근시�
   <!-- 조직별 -->
   <div class="page" id="page-org">
     <div class="row2">
-      <div class="card"><div class="card-title">조직별 일평균 근로시간</div><div class="legend" id="orgLg"><div class="li"><div class="ld" style="background:#1D9E75"></div>아트팀</div><div class="li"><div class="ld" style="background:#8B5CF6"></div>아트앤테크팀</div><div class="li"><div class="ld" style="background:#D85A30"></div>기획팀</div><div class="li"><div class="ld" style="background:#378ADD"></div>프로그램팀</div><div class="li"><div class="ld" style="background:#888780"></div>경영지원팀</div></div><div style="position:relative;height:250px"><canvas id="orgDaily" height="450" style="display: block; box-sizing: border-box; height: 250px; width: 531px;" width="957"></canvas></div></div>
-      <div class="card"><div class="card-title">조직별 인당 월연장근로시간</div><div style="position:relative;height:250px"><canvas id="orgOt" height="450" style="display: block; box-sizing: border-box; height: 250px; width: 531px;" width="957"></canvas></div></div>
+      <div class="card"><div class="card-title">조직별 일평균 근로시간</div><div class="legend" id="orgLg"><div class="li"><div class="ld" style="background:#1D9E75"></div>아트팀</div><div class="li"><div class="ld" style="background:#8B5CF6"></div>아트앤테크팀</div><div class="li"><div class="ld" style="background:#D85A30"></div>기획팀</div><div class="li"><div class="ld" style="background:#378ADD"></div>프로그램팀</div><div class="li"><div class="ld" style="background:#888780"></div>경영지원팀</div></div><div style="position:relative;height:250px"><canvas id="orgDaily" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0"></canvas></div></div>
+      <div class="card"><div class="card-title">조직별 인당 월연장근로시간</div><div style="position:relative;height:250px"><canvas id="orgOt" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0"></canvas></div></div>
     </div>
     <div class="full-card">
       <div class="card-title">조직별 상세 현황</div>
@@ -333,8 +415,8 @@ window.__REASONS__     = {"강동준_2025-12_12-05":"폭설로 인한 출근시�
   <!-- 직책별 -->
   <div class="page" id="page-pos">
     <div class="row2">
-      <div class="card"><div class="card-title">직책별 일평균 근로시간</div><div style="position:relative;height:250px"><canvas id="posDaily" height="450" style="display: block; box-sizing: border-box; height: 250px; width: 531px;" width="957"></canvas></div></div>
-      <div class="card"><div class="card-title">직책별 인당 월연장근로시간</div><div style="position:relative;height:250px"><canvas id="posOt" height="450" style="display: block; box-sizing: border-box; height: 250px; width: 531px;" width="957"></canvas></div></div>
+      <div class="card"><div class="card-title">직책별 일평균 근로시간</div><div style="position:relative;height:250px"><canvas id="posDaily" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0"></canvas></div></div>
+      <div class="card"><div class="card-title">직책별 인당 월연장근로시간</div><div style="position:relative;height:250px"><canvas id="posOt" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0"></canvas></div></div>
     </div>
     <div class="full-card">
       <div class="card-title">직책별 상세 현황</div>
@@ -382,428 +464,382 @@ window.__REASONS__     = {"강동준_2025-12_12-05":"폭설로 인한 출근시�
     </div>
   </div>
 
-  <!-- 이상 출퇴근 -->
+  <!-- 코어타임 미준수 -->
   <div class="page" id="page-anomaly">
-    <div class="full-card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-        <div class="card-title" style="margin-bottom:0">이상 출퇴근 현황 <span id="anomaly-count" style="font-size:11px;font-weight:400;color:#AAA;margin-left:6px">총 31건</span></div>
-        <button onclick="exportReasons()" style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid #3949AB;color:#3949AB;background:#fff;cursor:pointer">사유 내보내기 CSV</button>
+
+    <!-- 요약 차트 2개 -->
+    <div class="anomaly-summary-row">
+      <div class="card">
+        <div class="card-title">월별 미준수 건수</div>
+        <div style="position:relative;height:200px"><canvas id="anomalyMonthChart" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0"></canvas></div>
       </div>
-      <div class="filter-bar">
-        <label>월</label><select id="f-month" onchange="applyFilter()"><option value="">전체</option><option value="2026-04">26년 04월</option><option value="2026-03">26년 03월</option><option value="2026-02">26년 02월</option><option value="2026-01">26년 01월</option><option value="2025-12">25년 12월</option></select>
-        <label>조직</label><select id="f-org" onchange="applyFilter()"><option value="">전체</option><option>경영지원팀</option><option>기획팀</option><option>아트앤테크팀</option><option>아트팀</option><option>프로그램팀</option></select>
-        <label>직책</label><select id="f-pos" onchange="applyFilter()"><option value="">전체</option><option>팀원</option><option>팀장</option></select>
-        <label>이름</label><input id="f-name" type="text" placeholder="이름 검색" oninput="applyFilter()" style="width:90px">
-        <button class="filter-reset" onclick="resetFilter()">초기화</button>
+      <div class="card">
+        <div class="card-title">조직별 미준수 비율
+          <span style="font-size:11px;font-weight:400;color:#AAA;margin-left:4px">조직 클릭 시 필터</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;height:200px">
+          <div style="position:relative;flex:1;height:100%"><canvas id="anomalyOrgChart" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0"></canvas></div>
+          <div id="anomalyOrgLegend" style="font-size:11px;min-width:100px;line-height:2.2">
+    <div onclick="applyFilter('기획팀');document.getElementById('f-org').value='기획팀'" style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:2px 4px;border-radius:5px;transition:background .1s" onmouseover="this.style.background='#F0F2FF'" onmouseout="this.style.background=''">
+      <div style="width:10px;height:10px;border-radius:2px;background:#D85A30;flex-shrink:0"></div>
+      <span style="color:#333">기획팀</span>
+      <span style="color:#999;margin-left:auto;padding-left:6px">10건</span>
+    </div>
+    <div onclick="applyFilter('프로그램팀');document.getElementById('f-org').value='프로그램팀'" style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:2px 4px;border-radius:5px;transition:background .1s" onmouseover="this.style.background='#F0F2FF'" onmouseout="this.style.background=''">
+      <div style="width:10px;height:10px;border-radius:2px;background:#378ADD;flex-shrink:0"></div>
+      <span style="color:#333">프로그램팀</span>
+      <span style="color:#999;margin-left:auto;padding-left:6px">8건</span>
+    </div>
+    <div onclick="applyFilter('아트팀');document.getElementById('f-org').value='아트팀'" style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:2px 4px;border-radius:5px;transition:background .1s" onmouseover="this.style.background='#F0F2FF'" onmouseout="this.style.background=''">
+      <div style="width:10px;height:10px;border-radius:2px;background:#1D9E75;flex-shrink:0"></div>
+      <span style="color:#333">아트팀</span>
+      <span style="color:#999;margin-left:auto;padding-left:6px">7건</span>
+    </div>
+    <div onclick="applyFilter('아트앤테크팀');document.getElementById('f-org').value='아트앤테크팀'" style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:2px 4px;border-radius:5px;transition:background .1s" onmouseover="this.style.background='#F0F2FF'" onmouseout="this.style.background=''">
+      <div style="width:10px;height:10px;border-radius:2px;background:#8B5CF6;flex-shrink:0"></div>
+      <span style="color:#333">아트앤테크팀</span>
+      <span style="color:#999;margin-left:auto;padding-left:6px">6건</span>
+    </div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 활성 필터 표시 -->
+    <div id="activeFilterBar" style="display:none" class="active-filter-bar">
+      <span id="activeFilterLabel"></span>
+      <button onclick="resetFilter()">✕ 초기화</button>
+    </div>
+
+    <!-- 상세 테이블 -->
+    <div class="full-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div class="card-title" style="margin-bottom:0">
+          미준수 상세 목록
+          <span id="anomaly-count" style="font-size:11px;font-weight:400;color:#AAA;margin-left:6px">총 31건</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <div class="filter-bar" style="margin-bottom:0">
+            <label>월</label><select id="f-month" onchange="applyFilter()"><option value="">전체</option><option value="2026-04">26년 04월</option><option value="2026-03">26년 03월</option><option value="2026-02">26년 02월</option><option value="2026-01">26년 01월</option><option value="2025-12">25년 12월</option></select>
+            <label>조직</label><select id="f-org" onchange="applyFilter()"><option value="">전체</option><option>경영지원팀</option><option>기획팀</option><option>아트앤테크팀</option><option>아트팀</option><option>프로그램팀</option></select>
+            <label>직책</label><select id="f-pos" onchange="applyFilter()"><option value="">전체</option><option>팀원</option><option>팀장</option></select>
+            <label>이름</label><input id="f-name" type="text" placeholder="이름 검색" oninput="applyFilter()" style="width:80px">
+            <button class="filter-reset" onclick="resetFilter()">초기화</button>
+          </div>
+          <button onclick="exportReasons()" style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid #3949AB;color:#3949AB;background:#fff;cursor:pointer;white-space:nowrap">CSV 내보내기</button>
+        </div>
       </div>
       <div style="overflow-x:auto">
-        <table><thead><tr><th>이름</th><th>조직</th><th class="ctr">직책</th><th class="ctr">월</th><th class="ctr">날짜</th><th class="ctr">시작</th><th class="ctr">종료</th><th class="ctr">미준수</th><th style="min-width:180px">사유</th></tr></thead><tbody id="anomalyTb"><tr data-m="2026-04" data-o="기획팀" data-p="팀장" data-n="김석규" style="background:#F8F9FF">
-      <td style="font-weight:600">김석규</td>
+        <table><thead><tr>
+          <th>이름</th><th>조직</th><th class="ctr">직책</th>
+          <th class="ctr">월</th><th class="ctr">날짜</th>
+          <th class="ctr">시작</th><th class="ctr">종료</th>
+          <th class="ctr">미준수</th>
+        </tr></thead><tbody id="anomalyTb"><tr data-m="2026-04" data-o="기획팀" data-p="팀장" data-n="김석규" style="background:#F8F9FF">
+      <td><span class="name-link" onclick="openEmpModal('김석규')">김석규</span></td>
       <td><span class="chip cc">기획팀</span></td>
       <td class="ctr"><span class="chip cl">팀장</span></td>
       <td class="ctr">26년 04월</td>
       <td class="ctr">04-06</td>
       <td class="ctr" style="background:#FFF0EE;font-weight:700;color:#C0392B">10:01</td>
       <td class="ctr" style="">19:29</td>
-      <td class="ctr" style="white-space:normal;min-width:110px"><span class="vbadge vbadge-late">출근 +1분</span> </td>
-      <td><div style="display:flex;align-items:center;gap:4px">
-        <textarea class="reason-input " id="reason_김석규_2026-04_04-06" rows="1" placeholder="사유 입력..." onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();saveReasonUI('김석규_2026-04_04-06')}"></textarea>
-        <button class="save-btn" onclick="saveReasonUI('김석규_2026-04_04-06')">저장</button>
-      </div></td>
+      <td class="ctr" style="white-space:normal"><span class="vbadge vbadge-late">+1분</span> </td>
     </tr><tr data-m="2026-04" data-o="아트앤테크팀" data-p="팀원" data-n="김태연" style="">
-      <td style="font-weight:600">김태연</td>
+      <td><span class="name-link" onclick="openEmpModal('김태연')">김태연</span></td>
       <td><span class="chip cb">아트앤테크팀</span></td>
       <td class="ctr"><span class="chip cm">팀원</span></td>
       <td class="ctr">26년 04월</td>
       <td class="ctr">04-20</td>
       <td class="ctr" style="background:#FFF0EE;font-weight:700;color:#C0392B">10:11</td>
       <td class="ctr" style="">23:13</td>
-      <td class="ctr" style="white-space:normal;min-width:110px"><span class="vbadge vbadge-late">출근 +11분</span> </td>
-      <td><div style="display:flex;align-items:center;gap:4px">
-        <textarea class="reason-input saved" id="reason_김태연_2026-04_04-20" rows="1" placeholder="사유 입력..." onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();saveReasonUI('김태연_2026-04_04-20')}">지각</textarea>
-        <button class="save-btn" onclick="saveReasonUI('김태연_2026-04_04-20')">저장</button>
-      </div></td>
+      <td class="ctr" style="white-space:normal"><span class="vbadge vbadge-late">+11분</span> </td>
     </tr><tr data-m="2026-04" data-o="아트팀" data-p="팀장" data-n="김훈" style="background:#F8F9FF">
-      <td style="font-weight:600">김훈</td>
+      <td><span class="name-link" onclick="openEmpModal('김훈')">김훈</span></td>
       <td><span class="chip ca">아트팀</span></td>
       <td class="ctr"><span class="chip cl">팀장</span></td>
       <td class="ctr">26년 04월</td>
       <td class="ctr">04-23</td>
       <td class="ctr" style="background:#FFF0EE;font-weight:700;color:#C0392B">11:04</td>
       <td class="ctr" style="">22:05</td>
-      <td class="ctr" style="white-space:normal;min-width:110px"><span class="vbadge vbadge-late">출근 +64분</span> </td>
-      <td><div style="display:flex;align-items:center;gap:4px">
-        <textarea class="reason-input saved" id="reason_김훈_2026-04_04-23" rows="1" placeholder="사유 입력..." onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();saveReasonUI('김훈_2026-04_04-23')}">지각</textarea>
-        <button class="save-btn" onclick="saveReasonUI('김훈_2026-04_04-23')">저장</button>
-      </div></td>
+      <td class="ctr" style="white-space:normal"><span class="vbadge vbadge-late">+64분</span> </td>
     </tr><tr data-m="2026-04" data-o="프로그램팀" data-p="팀원" data-n="박한웅" style="">
-      <td style="font-weight:600">박한웅</td>
+      <td><span class="name-link" onclick="openEmpModal('박한웅')">박한웅</span></td>
       <td><span class="chip cd">프로그램팀</span></td>
       <td class="ctr"><span class="chip cm">팀원</span></td>
       <td class="ctr">26년 04월</td>
       <td class="ctr">04-09</td>
       <td class="ctr" style="">09:27</td>
       <td class="ctr" style="background:#EEF2FF;font-weight:700;color:#3949AB">16:59</td>
-      <td class="ctr" style="white-space:normal;min-width:110px"><span class="vbadge vbadge-early">1분 조기퇴근</span></td>
-      <td><div style="display:flex;align-items:center;gap:4px">
-        <textarea class="reason-input " id="reason_박한웅_2026-04_04-09" rows="1" placeholder="사유 입력..." onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();saveReasonUI('박한웅_2026-04_04-09')}"></textarea>
-        <button class="save-btn" onclick="saveReasonUI('박한웅_2026-04_04-09')">저장</button>
-      </div></td>
+      <td class="ctr" style="white-space:normal"><span class="vbadge vbadge-early"> 1분↑</span></td>
     </tr><tr data-m="2026-04" data-o="기획팀" data-p="팀원" data-n="한정연" style="background:#F8F9FF">
-      <td style="font-weight:600">한정연</td>
+      <td><span class="name-link" onclick="openEmpModal('한정연')">한정연</span></td>
       <td><span class="chip cc">기획팀</span></td>
       <td class="ctr"><span class="chip cm">팀원</span></td>
       <td class="ctr">26년 04월</td>
       <td class="ctr">04-06</td>
       <td class="ctr" style="background:#FFF0EE;font-weight:700;color:#C0392B">10:01</td>
       <td class="ctr" style="">20:35</td>
-      <td class="ctr" style="white-space:normal;min-width:110px"><span class="vbadge vbadge-late">출근 +1분</span> </td>
-      <td><div style="display:flex;align-items:center;gap:4px">
-        <textarea class="reason-input " id="reason_한정연_2026-04_04-06" rows="1" placeholder="사유 입력..." onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();saveReasonUI('한정연_2026-04_04-06')}"></textarea>
-        <button class="save-btn" onclick="saveReasonUI('한정연_2026-04_04-06')">저장</button>
-      </div></td>
+      <td class="ctr" style="white-space:normal"><span class="vbadge vbadge-late">+1분</span> </td>
     </tr><tr data-m="2026-04" data-o="기획팀" data-p="팀원" data-n="한정연" style="">
-      <td style="font-weight:600">한정연</td>
+      <td><span class="name-link" onclick="openEmpModal('한정연')">한정연</span></td>
       <td><span class="chip cc">기획팀</span></td>
       <td class="ctr"><span class="chip cm">팀원</span></td>
       <td class="ctr">26년 04월</td>
       <td class="ctr">04-10</td>
       <td class="ctr" style="background:#FFF0EE;font-weight:700;color:#C0392B">10:01</td>
       <td class="ctr" style="">19:49</td>
-      <td class="ctr" style="white-space:normal;min-width:110px"><span class="vbadge vbadge-late">출근 +1분</span> </td>
-      <td><div style="display:flex;align-items:center;gap:4px">
-        <textarea class="reason-input " id="reason_한정연_2026-04_04-10" rows="1" placeholder="사유 입력..." onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();saveReasonUI('한정연_2026-04_04-10')}"></textarea>
-        <button class="save-btn" onclick="saveReasonUI('한정연_2026-04_04-10')">저장</button>
-      </div></td>
+      <td class="ctr" style="white-space:normal"><span class="vbadge vbadge-late">+1분</span> </td>
     </tr><tr data-m="2026-04" data-o="기획팀" data-p="팀원" data-n="한정연" style="background:#F8F9FF">
-      <td style="font-weight:600">한정연</td>
+      <td><span class="name-link" onclick="openEmpModal('한정연')">한정연</span></td>
       <td><span class="chip cc">기획팀</span></td>
       <td class="ctr"><span class="chip cm">팀원</span></td>
       <td class="ctr">26년 04월</td>
       <td class="ctr">04-20</td>
       <td class="ctr" style="background:#FFF0EE;font-weight:700;color:#C0392B">10:25</td>
       <td class="ctr" style="">20:44</td>
-      <td class="ctr" style="white-space:normal;min-width:110px"><span class="vbadge vbadge-late">출근 +25분</span> </td>
-      <td><div style="display:flex;align-items:center;gap:4px">
-        <textarea class="reason-input saved" id="reason_한정연_2026-04_04-20" rows="1" placeholder="사유 입력..." onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();saveReasonUI('한정연_2026-04_04-20')}">지각</textarea>
-        <button class="save-btn" onclick="saveReasonUI('한정연_2026-04_04-20')">저장</button>
-      </div></td>
+      <td class="ctr" style="white-space:normal"><span class="vbadge vbadge-late">+25분</span> </td>
     </tr><tr data-m="2026-04" data-o="기획팀" data-p="팀원" data-n="한정연" style="">
-      <td style="font-weight:600">한정연</td>
+      <td><span class="name-link" onclick="openEmpModal('한정연')">한정연</span></td>
       <td><span class="chip cc">기획팀</span></td>
       <td class="ctr"><span class="chip cm">팀원</span></td>
       <td class="ctr">26년 04월</td>
       <td class="ctr">04-21</td>
       <td class="ctr" style="background:#FFF0EE;font-weight:700;color:#C0392B">10:09</td>
       <td class="ctr" style="">19:56</td>
-      <td class="ctr" style="white-space:normal;min-width:110px"><span class="vbadge vbadge-late">출근 +9분</span> </td>
-      <td><div style="display:flex;align-items:center;gap:4px">
-        <textarea class="reason-input " id="reason_한정연_2026-04_04-21" rows="1" placeholder="사유 입력..." onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();saveReasonUI('한정연_2026-04_04-21')}"></textarea>
-        <button class="save-btn" onclick="saveReasonUI('한정연_2026-04_04-21')">저장</button>
-      </div></td>
+      <td class="ctr" style="white-space:normal"><span class="vbadge vbadge-late">+9분</span> </td>
     </tr><tr data-m="2026-04" data-o="기획팀" data-p="팀원" data-n="한정연" style="background:#F8F9FF">
-      <td style="font-weight:600">한정연</td>
+      <td><span class="name-link" onclick="openEmpModal('한정연')">한정연</span></td>
       <td><span class="chip cc">기획팀</span></td>
       <td class="ctr"><span class="chip cm">팀원</span></td>
       <td class="ctr">26년 04월</td>
       <td class="ctr">04-22</td>
       <td class="ctr" style="background:#FFF0EE;font-weight:700;color:#C0392B">11:01</td>
       <td class="ctr" style="">20:15</td>
-      <td class="ctr" style="white-space:normal;min-width:110px"><span class="vbadge vbadge-late">출근 +61분</span> </td>
-      <td><div style="display:flex;align-items:center;gap:4px">
-        <textarea class="reason-input saved" id="reason_한정연_2026-04_04-22" rows="1" placeholder="사유 입력..." onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();saveReasonUI('한정연_2026-04_04-22')}">개인사유 (팀 사전공유O)</textarea>
-        <button class="save-btn" onclick="saveReasonUI('한정연_2026-04_04-22')">저장</button>
-      </div></td>
+      <td class="ctr" style="white-space:normal"><span class="vbadge vbadge-late">+61분</span> </td>
     </tr><tr data-m="2026-04" data-o="기획팀" data-p="팀원" data-n="한정연" style="">
-      <td style="font-weight:600">한정연</td>
+      <td><span class="name-link" onclick="openEmpModal('한정연')">한정연</span></td>
       <td><span class="chip cc">기획팀</span></td>
       <td class="ctr"><span class="chip cm">팀원</span></td>
       <td class="ctr">26년 04월</td>
       <td class="ctr">04-23</td>
       <td class="ctr" style="background:#FFF0EE;font-weight:700;color:#C0392B">10:05</td>
       <td class="ctr" style="">19:28</td>
-      <td class="ctr" style="white-space:normal;min-width:110px"><span class="vbadge vbadge-late">출근 +5분</span> </td>
-      <td><div style="display:flex;align-items:center;gap:4px">
-        <textarea class="reason-input " id="reason_한정연_2026-04_04-23" rows="1" placeholder="사유 입력..." onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();saveReasonUI('한정연_2026-04_04-23')}"></textarea>
-        <button class="save-btn" onclick="saveReasonUI('한정연_2026-04_04-23')">저장</button>
-      </div></td>
+      <td class="ctr" style="white-space:normal"><span class="vbadge vbadge-late">+5분</span> </td>
     </tr><tr data-m="2026-04" data-o="기획팀" data-p="팀원" data-n="한정연" style="background:#F8F9FF">
-      <td style="font-weight:600">한정연</td>
+      <td><span class="name-link" onclick="openEmpModal('한정연')">한정연</span></td>
       <td><span class="chip cc">기획팀</span></td>
       <td class="ctr"><span class="chip cm">팀원</span></td>
       <td class="ctr">26년 04월</td>
       <td class="ctr">04-30</td>
       <td class="ctr" style="background:#FFF0EE;font-weight:700;color:#C0392B">10:03</td>
       <td class="ctr" style="">18:59</td>
-      <td class="ctr" style="white-space:normal;min-width:110px"><span class="vbadge vbadge-late">출근 +3분</span> </td>
-      <td><div style="display:flex;align-items:center;gap:4px">
-        <textarea class="reason-input " id="reason_한정연_2026-04_04-30" rows="1" placeholder="사유 입력..." onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();saveReasonUI('한정연_2026-04_04-30')}"></textarea>
-        <button class="save-btn" onclick="saveReasonUI('한정연_2026-04_04-30')">저장</button>
-      </div></td>
+      <td class="ctr" style="white-space:normal"><span class="vbadge vbadge-late">+3분</span> </td>
     </tr><tr data-m="2026-03" data-o="아트앤테크팀" data-p="팀장" data-n="국중원" style="">
-      <td style="font-weight:600">국중원</td>
+      <td><span class="name-link" onclick="openEmpModal('국중원')">국중원</span></td>
       <td><span class="chip cb">아트앤테크팀</span></td>
       <td class="ctr"><span class="chip cl">팀장</span></td>
       <td class="ctr">26년 03월</td>
       <td class="ctr">03-17</td>
       <td class="ctr" style="background:#FFF0EE;font-weight:700;color:#C0392B">10:03</td>
       <td class="ctr" style="">18:27</td>
-      <td class="ctr" style="white-space:normal;min-width:110px"><span class="vbadge vbadge-late">출근 +3분</span> </td>
-      <td><div style="display:flex;align-items:center;gap:4px">
-        <textarea class="reason-input " id="reason_국중원_2026-03_03-17" rows="1" placeholder="사유 입력..." onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();saveReasonUI('국중원_2026-03_03-17')}"></textarea>
-        <button class="save-btn" onclick="saveReasonUI('국중원_2026-03_03-17')">저장</button>
-      </div></td>
+      <td class="ctr" style="white-space:normal"><span class="vbadge vbadge-late">+3분</span> </td>
     </tr><tr data-m="2026-03" data-o="아트앤테크팀" data-p="팀원" data-n="김태연" style="background:#F8F9FF">
-      <td style="font-weight:600">김태연</td>
+      <td><span class="name-link" onclick="openEmpModal('김태연')">김태연</span></td>
       <td><span class="chip cb">아트앤테크팀</span></td>
       <td class="ctr"><span class="chip cm">팀원</span></td>
       <td class="ctr">26년 03월</td>
       <td class="ctr">03-23</td>
       <td class="ctr" style="background:#FFF0EE;font-weight:700;color:#C0392B">10:04</td>
       <td class="ctr" style="">23:05</td>
-      <td class="ctr" style="white-space:normal;min-width:110px"><span class="vbadge vbadge-late">출근 +4분</span> </td>
-      <td><div style="display:flex;align-items:center;gap:4px">
-        <textarea class="reason-input " id="reason_김태연_2026-03_03-23" rows="1" placeholder="사유 입력..." onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();saveReasonUI('김태연_2026-03_03-23')}"></textarea>
-        <button class="save-btn" onclick="saveReasonUI('김태연_2026-03_03-23')">저장</button>
-      </div></td>
+      <td class="ctr" style="white-space:normal"><span class="vbadge vbadge-late">+4분</span> </td>
     </tr><tr data-m="2026-03" data-o="프로그램팀" data-p="팀원" data-n="이하은" style="">
-      <td style="font-weight:600">이하은</td>
+      <td><span class="name-link" onclick="openEmpModal('이하은')">이하은</span></td>
       <td><span class="chip cd">프로그램팀</span></td>
       <td class="ctr"><span class="chip cm">팀원</span></td>
       <td class="ctr">26년 03월</td>
       <td class="ctr">03-18</td>
       <td class="ctr" style="background:#FFF0EE;font-weight:700;color:#C0392B">10:02</td>
       <td class="ctr" style="">19:13</td>
-      <td class="ctr" style="white-space:normal;min-width:110px"><span class="vbadge vbadge-late">출근 +2분</span> </td>
-      <td><div style="display:flex;align-items:center;gap:4px">
-        <textarea class="reason-input " id="reason_이하은_2026-03_03-18" rows="1" placeholder="사유 입력..." onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();saveReasonUI('이하은_2026-03_03-18')}"></textarea>
-        <button class="save-btn" onclick="saveReasonUI('이하은_2026-03_03-18')">저장</button>
-      </div></td>
+      <td class="ctr" style="white-space:normal"><span class="vbadge vbadge-late">+2분</span> </td>
     </tr><tr data-m="2026-03" data-o="프로그램팀" data-p="팀원" data-n="이하은" style="background:#F8F9FF">
-      <td style="font-weight:600">이하은</td>
+      <td><span class="name-link" onclick="openEmpModal('이하은')">이하은</span></td>
       <td><span class="chip cd">프로그램팀</span></td>
       <td class="ctr"><span class="chip cm">팀원</span></td>
       <td class="ctr">26년 03월</td>
       <td class="ctr">03-27</td>
       <td class="ctr" style="">09:58</td>
       <td class="ctr" style="background:#EEF2FF;font-weight:700;color:#3949AB">12:35</td>
-      <td class="ctr" style="white-space:normal;min-width:110px"><span class="vbadge vbadge-early">4h 25분 조기퇴근</span></td>
-      <td><div style="display:flex;align-items:center;gap:4px">
-        <textarea class="reason-input " id="reason_이하은_2026-03_03-27" rows="1" placeholder="사유 입력..." onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();saveReasonUI('이하은_2026-03_03-27')}"></textarea>
-        <button class="save-btn" onclick="saveReasonUI('이하은_2026-03_03-27')">저장</button>
-      </div></td>
+      <td class="ctr" style="white-space:normal"><span class="vbadge vbadge-early">4h 25분↑</span></td>
     </tr><tr data-m="2026-03" data-o="기획팀" data-p="팀원" data-n="한정연" style="">
-      <td style="font-weight:600">한정연</td>
+      <td><span class="name-link" onclick="openEmpModal('한정연')">한정연</span></td>
       <td><span class="chip cc">기획팀</span></td>
       <td class="ctr"><span class="chip cm">팀원</span></td>
       <td class="ctr">26년 03월</td>
       <td class="ctr">03-06</td>
       <td class="ctr" style="background:#FFF0EE;font-weight:700;color:#C0392B">10:04</td>
       <td class="ctr" style="">20:21</td>
-      <td class="ctr" style="white-space:normal;min-width:110px"><span class="vbadge vbadge-late">출근 +4분</span> </td>
-      <td><div style="display:flex;align-items:center;gap:4px">
-        <textarea class="reason-input " id="reason_한정연_2026-03_03-06" rows="1" placeholder="사유 입력..." onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();saveReasonUI('한정연_2026-03_03-06')}"></textarea>
-        <button class="save-btn" onclick="saveReasonUI('한정연_2026-03_03-06')">저장</button>
-      </div></td>
+      <td class="ctr" style="white-space:normal"><span class="vbadge vbadge-late">+4분</span> </td>
     </tr><tr data-m="2026-03" data-o="기획팀" data-p="팀원" data-n="한정연" style="background:#F8F9FF">
-      <td style="font-weight:600">한정연</td>
+      <td><span class="name-link" onclick="openEmpModal('한정연')">한정연</span></td>
       <td><span class="chip cc">기획팀</span></td>
       <td class="ctr"><span class="chip cm">팀원</span></td>
       <td class="ctr">26년 03월</td>
       <td class="ctr">03-10</td>
       <td class="ctr" style="background:#FFF0EE;font-weight:700;color:#C0392B">10:09</td>
       <td class="ctr" style="">19:12</td>
-      <td class="ctr" style="white-space:normal;min-width:110px"><span class="vbadge vbadge-late">출근 +9분</span> </td>
-      <td><div style="display:flex;align-items:center;gap:4px">
-        <textarea class="reason-input " id="reason_한정연_2026-03_03-10" rows="1" placeholder="사유 입력..." onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();saveReasonUI('한정연_2026-03_03-10')}"></textarea>
-        <button class="save-btn" onclick="saveReasonUI('한정연_2026-03_03-10')">저장</button>
-      </div></td>
+      <td class="ctr" style="white-space:normal"><span class="vbadge vbadge-late">+9분</span> </td>
     </tr><tr data-m="2026-02" data-o="아트팀" data-p="팀장" data-n="김훈" style="">
-      <td style="font-weight:600">김훈</td>
+      <td><span class="name-link" onclick="openEmpModal('김훈')">김훈</span></td>
       <td><span class="chip ca">아트팀</span></td>
       <td class="ctr"><span class="chip cl">팀장</span></td>
       <td class="ctr">26년 02월</td>
       <td class="ctr">02-26</td>
       <td class="ctr" style="background:#FFF0EE;font-weight:700;color:#C0392B">10:09</td>
       <td class="ctr" style="">18:42</td>
-      <td class="ctr" style="white-space:normal;min-width:110px"><span class="vbadge vbadge-late">출근 +9분</span> </td>
-      <td><div style="display:flex;align-items:center;gap:4px">
-        <textarea class="reason-input " id="reason_김훈_2026-02_02-26" rows="1" placeholder="사유 입력..." onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();saveReasonUI('김훈_2026-02_02-26')}"></textarea>
-        <button class="save-btn" onclick="saveReasonUI('김훈_2026-02_02-26')">저장</button>
-      </div></td>
+      <td class="ctr" style="white-space:normal"><span class="vbadge vbadge-late">+9분</span> </td>
     </tr><tr data-m="2026-01" data-o="아트앤테크팀" data-p="팀원" data-n="김태연" style="background:#F8F9FF">
-      <td style="font-weight:600">김태연</td>
+      <td><span class="name-link" onclick="openEmpModal('김태연')">김태연</span></td>
       <td><span class="chip cb">아트앤테크팀</span></td>
       <td class="ctr"><span class="chip cm">팀원</span></td>
       <td class="ctr">26년 01월</td>
       <td class="ctr">01-13</td>
       <td class="ctr" style="background:#FFF0EE;font-weight:700;color:#C0392B">10:08</td>
       <td class="ctr" style="">17:49</td>
-      <td class="ctr" style="white-space:normal;min-width:110px"><span class="vbadge vbadge-late">출근 +8분</span> </td>
-      <td><div style="display:flex;align-items:center;gap:4px">
-        <textarea class="reason-input " id="reason_김태연_2026-01_01-13" rows="1" placeholder="사유 입력..." onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();saveReasonUI('김태연_2026-01_01-13')}"></textarea>
-        <button class="save-btn" onclick="saveReasonUI('김태연_2026-01_01-13')">저장</button>
-      </div></td>
+      <td class="ctr" style="white-space:normal"><span class="vbadge vbadge-late">+8분</span> </td>
     </tr><tr data-m="2026-01" data-o="아트앤테크팀" data-p="팀원" data-n="김태연" style="">
-      <td style="font-weight:600">김태연</td>
+      <td><span class="name-link" onclick="openEmpModal('김태연')">김태연</span></td>
       <td><span class="chip cb">아트앤테크팀</span></td>
       <td class="ctr"><span class="chip cm">팀원</span></td>
       <td class="ctr">26년 01월</td>
       <td class="ctr">01-28</td>
       <td class="ctr" style="background:#FFF0EE;font-weight:700;color:#C0392B">10:10</td>
       <td class="ctr" style="">18:39</td>
-      <td class="ctr" style="white-space:normal;min-width:110px"><span class="vbadge vbadge-late">출근 +10분</span> </td>
-      <td><div style="display:flex;align-items:center;gap:4px">
-        <textarea class="reason-input " id="reason_김태연_2026-01_01-28" rows="1" placeholder="사유 입력..." onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();saveReasonUI('김태연_2026-01_01-28')}"></textarea>
-        <button class="save-btn" onclick="saveReasonUI('김태연_2026-01_01-28')">저장</button>
-      </div></td>
+      <td class="ctr" style="white-space:normal"><span class="vbadge vbadge-late">+10분</span> </td>
     </tr><tr data-m="2025-12" data-o="프로그램팀" data-p="팀원" data-n="강동준" style="background:#F8F9FF">
-      <td style="font-weight:600">강동준</td>
+      <td><span class="name-link" onclick="openEmpModal('강동준')">강동준</span></td>
       <td><span class="chip cd">프로그램팀</span></td>
       <td class="ctr"><span class="chip cm">팀원</span></td>
       <td class="ctr">25년 12월</td>
       <td class="ctr">12-05</td>
       <td class="ctr" style="background:#FFF0EE;font-weight:700;color:#C0392B">11:37</td>
       <td class="ctr" style="">17:50</td>
-      <td class="ctr" style="white-space:normal;min-width:110px"><span class="vbadge vbadge-late">출근 +97분</span> </td>
-      <td><div style="display:flex;align-items:center;gap:4px">
-        <textarea class="reason-input saved" id="reason_강동준_2025-12_12-05" rows="1" placeholder="사유 입력..." onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();saveReasonUI('강동준_2025-12_12-05')}">폭설로 인한 출근시간 내부조정</textarea>
-        <button class="save-btn" onclick="saveReasonUI('강동준_2025-12_12-05')">저장</button>
-      </div></td>
+      <td class="ctr" style="white-space:normal"><span class="vbadge vbadge-late">+97분</span> </td>
     </tr><tr data-m="2025-12" data-o="아트앤테크팀" data-p="팀장" data-n="국중원" style="">
-      <td style="font-weight:600">국중원</td>
+      <td><span class="name-link" onclick="openEmpModal('국중원')">국중원</span></td>
       <td><span class="chip cb">아트앤테크팀</span></td>
       <td class="ctr"><span class="chip cl">팀장</span></td>
       <td class="ctr">25년 12월</td>
       <td class="ctr">12-05</td>
       <td class="ctr" style="background:#FFF0EE;font-weight:700;color:#C0392B">11:05</td>
       <td class="ctr" style="">20:28</td>
-      <td class="ctr" style="white-space:normal;min-width:110px"><span class="vbadge vbadge-late">출근 +65분</span> </td>
-      <td><div style="display:flex;align-items:center;gap:4px">
-        <textarea class="reason-input saved" id="reason_국중원_2025-12_12-05" rows="1" placeholder="사유 입력..." onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();saveReasonUI('국중원_2025-12_12-05')}">폭설로 인한 출근시간 내부조정</textarea>
-        <button class="save-btn" onclick="saveReasonUI('국중원_2025-12_12-05')">저장</button>
-      </div></td>
+      <td class="ctr" style="white-space:normal"><span class="vbadge vbadge-late">+65분</span> </td>
     </tr><tr data-m="2025-12" data-o="아트팀" data-p="팀원" data-n="김시욱" style="background:#F8F9FF">
-      <td style="font-weight:600">김시욱</td>
+      <td><span class="name-link" onclick="openEmpModal('김시욱')">김시욱</span></td>
       <td><span class="chip ca">아트팀</span></td>
       <td class="ctr"><span class="chip cm">팀원</span></td>
       <td class="ctr">25년 12월</td>
       <td class="ctr">12-05</td>
       <td class="ctr" style="background:#FFF0EE;font-weight:700;color:#C0392B">11:42</td>
       <td class="ctr" style="">18:56</td>
-      <td class="ctr" style="white-space:normal;min-width:110px"><span class="vbadge vbadge-late">출근 +102분</span> </td>
-      <td><div style="display:flex;align-items:center;gap:4px">
-        <textarea class="reason-input saved" id="reason_김시욱_2025-12_12-05" rows="1" placeholder="사유 입력..." onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();saveReasonUI('김시욱_2025-12_12-05')}">폭설로 인한 출근시간 내부조정</textarea>
-        <button class="save-btn" onclick="saveReasonUI('김시욱_2025-12_12-05')">저장</button>
-      </div></td>
+      <td class="ctr" style="white-space:normal"><span class="vbadge vbadge-late">+102분</span> </td>
     </tr><tr data-m="2025-12" data-o="아트팀" data-p="팀장" data-n="김훈" style="">
-      <td style="font-weight:600">김훈</td>
+      <td><span class="name-link" onclick="openEmpModal('김훈')">김훈</span></td>
       <td><span class="chip ca">아트팀</span></td>
       <td class="ctr"><span class="chip cl">팀장</span></td>
       <td class="ctr">25년 12월</td>
       <td class="ctr">12-05</td>
       <td class="ctr" style="background:#FFF0EE;font-weight:700;color:#C0392B">11:54</td>
       <td class="ctr" style="">18:56</td>
-      <td class="ctr" style="white-space:normal;min-width:110px"><span class="vbadge vbadge-late">출근 +114분</span> </td>
-      <td><div style="display:flex;align-items:center;gap:4px">
-        <textarea class="reason-input saved" id="reason_김훈_2025-12_12-05" rows="1" placeholder="사유 입력..." onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();saveReasonUI('김훈_2025-12_12-05')}">폭설로 인한 출근시간 내부조정</textarea>
-        <button class="save-btn" onclick="saveReasonUI('김훈_2025-12_12-05')">저장</button>
-      </div></td>
+      <td class="ctr" style="white-space:normal"><span class="vbadge vbadge-late">+114분</span> </td>
     </tr><tr data-m="2025-12" data-o="아트팀" data-p="팀장" data-n="김훈" style="background:#F8F9FF">
-      <td style="font-weight:600">김훈</td>
+      <td><span class="name-link" onclick="openEmpModal('김훈')">김훈</span></td>
       <td><span class="chip ca">아트팀</span></td>
       <td class="ctr"><span class="chip cl">팀장</span></td>
       <td class="ctr">25년 12월</td>
       <td class="ctr">12-31</td>
       <td class="ctr" style="">06:44</td>
       <td class="ctr" style="background:#EEF2FF;font-weight:700;color:#3949AB">16:59</td>
-      <td class="ctr" style="white-space:normal;min-width:110px"><span class="vbadge vbadge-early">1분 조기퇴근</span></td>
-      <td><div style="display:flex;align-items:center;gap:4px">
-        <textarea class="reason-input " id="reason_김훈_2025-12_12-31" rows="1" placeholder="사유 입력..." onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();saveReasonUI('김훈_2025-12_12-31')}"></textarea>
-        <button class="save-btn" onclick="saveReasonUI('김훈_2025-12_12-31')">저장</button>
-      </div></td>
+      <td class="ctr" style="white-space:normal"><span class="vbadge vbadge-early"> 1분↑</span></td>
     </tr><tr data-m="2025-12" data-o="프로그램팀" data-p="팀원" data-n="박한웅" style="">
-      <td style="font-weight:600">박한웅</td>
+      <td><span class="name-link" onclick="openEmpModal('박한웅')">박한웅</span></td>
       <td><span class="chip cd">프로그램팀</span></td>
       <td class="ctr"><span class="chip cm">팀원</span></td>
       <td class="ctr">25년 12월</td>
       <td class="ctr">12-05</td>
       <td class="ctr" style="background:#FFF0EE;font-weight:700;color:#C0392B">10:06</td>
       <td class="ctr" style="">18:27</td>
-      <td class="ctr" style="white-space:normal;min-width:110px"><span class="vbadge vbadge-late">출근 +6분</span> </td>
-      <td><div style="display:flex;align-items:center;gap:4px">
-        <textarea class="reason-input saved" id="reason_박한웅_2025-12_12-05" rows="1" placeholder="사유 입력..." onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();saveReasonUI('박한웅_2025-12_12-05')}">폭설로 인한 출근시간 내부조정</textarea>
-        <button class="save-btn" onclick="saveReasonUI('박한웅_2025-12_12-05')">저장</button>
-      </div></td>
+      <td class="ctr" style="white-space:normal"><span class="vbadge vbadge-late">+6분</span> </td>
     </tr><tr data-m="2025-12" data-o="프로그램팀" data-p="팀장" data-n="신휘재" style="background:#F8F9FF">
-      <td style="font-weight:600">신휘재</td>
+      <td><span class="name-link" onclick="openEmpModal('신휘재')">신휘재</span></td>
       <td><span class="chip cd">프로그램팀</span></td>
       <td class="ctr"><span class="chip cl">팀장</span></td>
       <td class="ctr">25년 12월</td>
       <td class="ctr">12-05</td>
       <td class="ctr" style="background:#FFF0EE;font-weight:700;color:#C0392B">10:08</td>
       <td class="ctr" style="">19:24</td>
-      <td class="ctr" style="white-space:normal;min-width:110px"><span class="vbadge vbadge-late">출근 +8분</span> </td>
-      <td><div style="display:flex;align-items:center;gap:4px">
-        <textarea class="reason-input saved" id="reason_신휘재_2025-12_12-05" rows="1" placeholder="사유 입력..." onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();saveReasonUI('신휘재_2025-12_12-05')}">폭설로 인한 출근시간 내부조정</textarea>
-        <button class="save-btn" onclick="saveReasonUI('신휘재_2025-12_12-05')">저장</button>
-      </div></td>
+      <td class="ctr" style="white-space:normal"><span class="vbadge vbadge-late">+8분</span> </td>
     </tr><tr data-m="2025-12" data-o="아트팀" data-p="팀원" data-n="유예진" style="">
-      <td style="font-weight:600">유예진</td>
+      <td><span class="name-link" onclick="openEmpModal('유예진')">유예진</span></td>
       <td><span class="chip ca">아트팀</span></td>
       <td class="ctr"><span class="chip cm">팀원</span></td>
       <td class="ctr">25년 12월</td>
       <td class="ctr">12-05</td>
       <td class="ctr" style="background:#FFF0EE;font-weight:700;color:#C0392B">11:00</td>
       <td class="ctr" style="">18:37</td>
-      <td class="ctr" style="white-space:normal;min-width:110px"><span class="vbadge vbadge-late">출근 +60분</span> </td>
-      <td><div style="display:flex;align-items:center;gap:4px">
-        <textarea class="reason-input saved" id="reason_유예진_2025-12_12-05" rows="1" placeholder="사유 입력..." onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();saveReasonUI('유예진_2025-12_12-05')}">폭설로 인한 출근시간 내부조정</textarea>
-        <button class="save-btn" onclick="saveReasonUI('유예진_2025-12_12-05')">저장</button>
-      </div></td>
+      <td class="ctr" style="white-space:normal"><span class="vbadge vbadge-late">+60분</span> </td>
     </tr><tr data-m="2025-12" data-o="프로그램팀" data-p="팀원" data-n="이하은" style="background:#F8F9FF">
-      <td style="font-weight:600">이하은</td>
+      <td><span class="name-link" onclick="openEmpModal('이하은')">이하은</span></td>
       <td><span class="chip cd">프로그램팀</span></td>
       <td class="ctr"><span class="chip cm">팀원</span></td>
       <td class="ctr">25년 12월</td>
       <td class="ctr">12-02</td>
       <td class="ctr" style="background:#FFF0EE;font-weight:700;color:#C0392B">10:03</td>
       <td class="ctr" style="">19:06</td>
-      <td class="ctr" style="white-space:normal;min-width:110px"><span class="vbadge vbadge-late">출근 +3분</span> </td>
-      <td><div style="display:flex;align-items:center;gap:4px">
-        <textarea class="reason-input " id="reason_이하은_2025-12_12-02" rows="1" placeholder="사유 입력..." onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();saveReasonUI('이하은_2025-12_12-02')}"></textarea>
-        <button class="save-btn" onclick="saveReasonUI('이하은_2025-12_12-02')">저장</button>
-      </div></td>
+      <td class="ctr" style="white-space:normal"><span class="vbadge vbadge-late">+3분</span> </td>
     </tr><tr data-m="2025-12" data-o="프로그램팀" data-p="팀원" data-n="전재경" style="">
-      <td style="font-weight:600">전재경</td>
+      <td><span class="name-link" onclick="openEmpModal('전재경')">전재경</span></td>
       <td><span class="chip cd">프로그램팀</span></td>
       <td class="ctr"><span class="chip cm">팀원</span></td>
       <td class="ctr">25년 12월</td>
       <td class="ctr">12-05</td>
       <td class="ctr" style="background:#FFF0EE;font-weight:700;color:#C0392B">11:41</td>
       <td class="ctr" style="">18:56</td>
-      <td class="ctr" style="white-space:normal;min-width:110px"><span class="vbadge vbadge-late">출근 +101분</span> </td>
-      <td><div style="display:flex;align-items:center;gap:4px">
-        <textarea class="reason-input saved" id="reason_전재경_2025-12_12-05" rows="1" placeholder="사유 입력..." onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();saveReasonUI('전재경_2025-12_12-05')}">폭설로 인한 출근시간 내부조정</textarea>
-        <button class="save-btn" onclick="saveReasonUI('전재경_2025-12_12-05')">저장</button>
-      </div></td>
+      <td class="ctr" style="white-space:normal"><span class="vbadge vbadge-late">+101분</span> </td>
     </tr><tr data-m="2025-12" data-o="아트팀" data-p="팀원" data-n="정의혁" style="background:#F8F9FF">
-      <td style="font-weight:600">정의혁</td>
+      <td><span class="name-link" onclick="openEmpModal('정의혁')">정의혁</span></td>
       <td><span class="chip ca">아트팀</span></td>
       <td class="ctr"><span class="chip cm">팀원</span></td>
       <td class="ctr">25년 12월</td>
       <td class="ctr">12-05</td>
       <td class="ctr" style="background:#FFF0EE;font-weight:700;color:#C0392B">11:00</td>
       <td class="ctr" style="">18:30</td>
-      <td class="ctr" style="white-space:normal;min-width:110px"><span class="vbadge vbadge-late">출근 +60분</span> </td>
-      <td><div style="display:flex;align-items:center;gap:4px">
-        <textarea class="reason-input saved" id="reason_정의혁_2025-12_12-05" rows="1" placeholder="사유 입력..." onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();saveReasonUI('정의혁_2025-12_12-05')}">폭설로 인한 출근시간 내부조정</textarea>
-        <button class="save-btn" onclick="saveReasonUI('정의혁_2025-12_12-05')">저장</button>
-      </div></td>
+      <td class="ctr" style="white-space:normal"><span class="vbadge vbadge-late">+60분</span> </td>
     </tr></tbody></table>
       </div>
     </div>
   </div>
+
+  <!-- 직원 상세 모달 -->
+  <div class="modal-backdrop" id="empModal" style="display:none" onclick="closeEmpModal(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 id="modalTitle">직원 상세</h3>
+        <button class="modal-close" onclick="document.getElementById('empModal').style.display='none'">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-stat-row" id="modalStats"></div>
+        <div class="modal-mini-chart">
+          <div style="font-size:12px;font-weight:600;color:#555;margin-bottom:8px">월별 미준수 건수</div>
+          <div style="position:relative;height:90px"><canvas id="modalMiniChart"></canvas></div>
+        </div>
+        <div style="font-size:12px;font-weight:600;color:#555;margin-bottom:8px">미준수 이력 · 사유 입력 후 Enter 또는 저장 클릭</div>
+        <table class="modal-table">
+          <thead><tr><th>월</th><th>날짜</th><th>시작</th><th>종료</th><th>미준수</th><th style="min-width:160px">사유</th></tr></thead>
+          <tbody id="modalTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
 
   <!-- ══ 비용 현황 ══ -->
   <div class="page" id="page-cost">
@@ -812,65 +848,72 @@ window.__REASONS__     = {"강동준_2025-12_12-05":"폭설로 인한 출근시�
     <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px" id="costKpiGrid">
       <div class="kpi">
         <div class="kpi-label">최근월 공통운영비</div>
-        <div class="kpi-value" id="ck1">712,739원</div>
-        <div class="kpi-sub" id="ck1sub">전월 대비 +545,467원</div>
+        <div class="kpi-value" id="ck1">—</div>
+        <div class="kpi-sub" id="ck1sub">—</div>
       </div>
       <div class="kpi">
         <div class="kpi-label">공통운영비 잔액</div>
-        <div class="kpi-value" id="ck2">3,556,860원</div>
-        <div class="kpi-sub" id="ck2sub">공통운영비 가용예산 잔액</div>
+        <div class="kpi-value" id="ck2">—</div>
+        <div class="kpi-sub" id="ck2sub">—</div>
       </div>
       <div class="kpi">
         <div class="kpi-label">최근월 카페테리아</div>
-        <div class="kpi-value" id="ck3">426,799원</div>
-        <div class="kpi-sub" id="ck3sub">전월 대비 -1,501,447원</div>
+        <div class="kpi-value" id="ck3">—</div>
+        <div class="kpi-sub" id="ck3sub">—</div>
       </div>
       <div class="kpi">
         <div class="kpi-label">최근월 야근교통비</div>
-        <div class="kpi-value" id="ck4">30,625,800원</div>
-        <div class="kpi-sub" id="ck4sub">최근월 Asset 구매 합계</div>
+        <div class="kpi-value" id="ck4">—</div>
+        <div class="kpi-sub" id="ck4sub">—</div>
       </div>
     </div>
 
     <!-- 조직별 비용 요약 (최근월) -->
     <div class="full-card">
-      <div class="card-title" id="teamSummaryTitle">조직별 비용 사용내역 (26.4월)</div>
-      <div style="position:relative;height:240px"><canvas id="teamSummaryChart" width="2014" height="432" style="display: block; box-sizing: border-box; height: 240px; width: 1118px;"></canvas></div>
-    </div>
-
-    <div class="row2">
-      <!-- 야근교통비 추이 -->
-      <div class="card">
-        <div class="card-title">야근교통비 (팀별 추이)</div>
-        <div class="legend" id="otCostLg"><div class="li"><div class="ld" style="background:#D85A30"></div>기획팀</div><div class="li"><div class="ld" style="background:#8B5CF6"></div>아트앤테크팀</div><div class="li"><div class="ld" style="background:#1D9E75"></div>아트팀</div><div class="li"><div class="ld" style="background:#378ADD"></div>프로그램팀</div><div class="li"><div class="ld" style="background:#888780"></div>경영지원팀</div></div>
-        <div style="position:relative;height:220px"><canvas id="otCostChart" width="957" height="396" style="display: block; box-sizing: border-box; height: 220px; width: 531px;"></canvas></div>
-      </div>
-      <!-- 공통운영비 팀별 추이 -->
-      <div class="card">
-        <div class="card-title">공통운영비 (팀별 추이)</div>
-        <div class="legend" id="commonOrgLg"><div class="li"><div class="ld" style="background:#D85A30"></div>기획팀</div><div class="li"><div class="ld" style="background:#8B5CF6"></div>아트앤테크팀</div><div class="li"><div class="ld" style="background:#1D9E75"></div>아트팀</div><div class="li"><div class="ld" style="background:#378ADD"></div>프로그램팀</div><div class="li"><div class="ld" style="background:#888780"></div>경영지원팀</div></div>
-        <div style="position:relative;height:220px"><canvas id="commonOrgChart" width="957" height="396" style="display: block; box-sizing: border-box; height: 220px; width: 531px;"></canvas></div>
+      <div class="card-title" id="teamSummaryTitle">조직별 비용 사용내역 (최근월)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#555;margin-bottom:8px">Asset 구매</div>
+          <div style="position:relative;height:200px"><canvas id="teamSummaryAssetChart"></canvas></div>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#555;margin-bottom:8px">야근교통비</div>
+          <div style="position:relative;height:200px"><canvas id="teamSummaryOtChart"></canvas></div>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#555;margin-bottom:8px">공통운영비</div>
+          <div style="position:relative;height:200px"><canvas id="teamSummaryCommonChart"></canvas></div>
+        </div>
       </div>
     </div>
 
-    <div class="row2">
-      <!-- 공통운영비 월별 합계 -->
-      <div class="card">
-        <div class="card-title">공통운영비 (월별 합계 · 잔액)</div>
-        <div style="position:relative;height:220px"><canvas id="commonCostChart" width="957" height="396" style="display: block; box-sizing: border-box; height: 220px; width: 531px;"></canvas></div>
-      </div>
-      <!-- Asset 구매 팀별 -->
-      <div class="card">
-        <div class="card-title">Asset 구매 (팀별)</div>
-        <div class="legend" id="assetLg"><div class="li"><div class="ld" style="background:#378ADD"></div>프로그램팀</div><div class="li"><div class="ld" style="background:#888780"></div>경영지원팀</div><div class="li"><div class="ld" style="background:#BBBBBB"></div>기타</div></div>
-        <div style="position:relative;height:220px"><canvas id="assetChart" width="957" height="396" style="display: block; box-sizing: border-box; height: 220px; width: 531px;"></canvas></div>
+    <!-- 야근교통비 추이 -->
+    <div class="full-card">
+      <div class="card-title">야근교통비 (팀별 추이)</div>
+      <div class="legend" id="otCostLg"></div>
+      <div style="position:relative;height:200px"><canvas id="otCostChart"></canvas></div>
+    </div>
+
+    <!-- 공통운영비: 팀별 추이 + 월별 합계 합친 full-card -->
+    <div class="full-card">
+      <div class="card-title">공통운영비</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#555;margin-bottom:8px">팀별 추이</div>
+          <div class="legend" id="commonOrgLg"></div>
+          <div style="position:relative;height:200px"><canvas id="commonOrgChart"></canvas></div>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#555;margin-bottom:8px">월별 합계</div>
+          <div style="position:relative;height:200px"><canvas id="commonCostChart"></canvas></div>
+        </div>
       </div>
     </div>
 
     <!-- 카페테리아 운영비 -->
     <div class="full-card">
       <div class="card-title">카페테리아 운영비</div>
-      <div style="position:relative;height:240px"><canvas id="cafeCostChart" width="2014" height="432" style="display: block; box-sizing: border-box; height: 240px; width: 1118px;"></canvas></div>
+      <div style="position:relative;height:240px"><canvas id="cafeCostChart"></canvas></div>
     </div>
 
   </div>
@@ -1033,6 +1076,7 @@ async function processFile(file) {
       const ws = wb.Sheets[wb.SheetNames[0]];
       const raw = XLSX.utils.sheet_to_json(ws, { defval: '' });
       parseCostSheet(wb);
+      parseOtAllowSheet(wb);
       costChartsInited = false;
       const result = aggregate(raw);
       await renderDashboard(result, file.name);
@@ -1288,6 +1332,7 @@ async function renderDashboard(data, fileName) {
   });
 
   // 전사 테이블
+  renderOtAllow();
   document.getElementById('overviewTb').innerHTML = totalArr.map(r =>
     `<tr><td style="font-weight:600">${mLabel(r.월)}</td>
     <td class="num ${r.일평균>=9?'hi-d':''}">${r.일평균.toFixed(2)}</td>
@@ -1389,36 +1434,12 @@ async function renderDashboard(data, fileName) {
 
   // 이상 출퇴근 테이블
   const reasons = loadReasons();
-  document.getElementById('anomalyTb').innerHTML = anomaly.map((r, i) => {
-    const isLate = r.late > 0, isEarly = r.early > 0;
-    const inStyle = isLate ? 'background:#FFF0EE;font-weight:700;color:#C0392B' : '';
-    const outStyle = isEarly ? 'background:#EEF2FF;font-weight:700;color:#3949AB' : '';
-    const key = getKey(r.이름, r.월, r.dd);
-    const saved = reasons[key] || '';
-    let vBadge = '';
-    if (r.late > 0) vBadge += `<span class="vbadge vbadge-late">출근 +${r.late}분</span> `;
-    if (r.early > 0) {
-      const h = Math.floor(r.early / 60), mm = r.early % 60;
-      vBadge += `<span class="vbadge vbadge-early">${h > 0 ? h + 'h ' : ''}${mm}분 조기퇴근</span>`;
-    }
-    return `<tr data-m="${r.월}" data-o="${r.조직}" data-p="${r.직책}" data-n="${r.이름}" style="${i%2===0?'background:#F8F9FF':''}">
-      <td style="font-weight:600">${r.이름}</td>
-      <td><span class="chip ${ORG_CHIP[r.조직]||'ce'}">${r.조직}</span></td>
-      <td class="ctr"><span class="chip ${POS_CHIP[r.직책]||'cm'}">${r.직책}</span></td>
-      <td class="ctr">${mLabel(r.월)}</td>
-      <td class="ctr">${r.dd}</td>
-      <td class="ctr" style="${inStyle}">${r.시작시각}</td>
-      <td class="ctr" style="${outStyle}">${r.종료시각}</td>
-      <td class="ctr" style="white-space:normal;min-width:110px">${vBadge}</td>
-      <td><div style="display:flex;align-items:center;gap:4px">
-        <textarea class="reason-input ${saved?'saved':''}" id="reason_${key}" rows="1"
-          placeholder="사유 입력..."
-          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();saveReasonUI('${key}')}"
-        >${saved}</textarea>
-        <button class="save-btn" onclick="saveReasonUI('${key}')">저장</button>
-      </div></td>
-    </tr>`;
-  }).join('');
+  // 요약 차트 그리기 (anomaly 전역 저장)
+  window._anomalyData = anomaly;
+  renderAnomalySummaryCharts(anomaly);
+
+  // 테이블 렌더 (이름 클릭 → 모달)
+  renderAnomalyTable(anomaly);
 
   updateCount();
 }
@@ -1511,7 +1532,13 @@ async function saveReasonUI(key) {
   const btn = el.nextElementSibling;
   if (btn) { btn.textContent = '✓'; btn.style.background = '#1D9E75'; setTimeout(() => { btn.textContent = '저장'; btn.style.background = '#3949AB'; }, 1200); }
 }
-function applyFilter() {
+function applyFilter(orgFromChart, monthFromChart) {
+  if (orgFromChart !== undefined) {
+    document.getElementById('f-org').value = orgFromChart || '';
+  }
+  if (monthFromChart !== undefined) {
+    document.getElementById('f-month').value = monthFromChart || '';
+  }
   const fm = document.getElementById('f-month').value;
   const fo = document.getElementById('f-org').value;
   const fp = document.getElementById('f-pos').value;
@@ -1523,11 +1550,23 @@ function applyFilter() {
     if (show) vis++;
   });
   updateCount(vis);
+  // 활성 필터 표시
+  const bar = document.getElementById('activeFilterBar');
+  const label = document.getElementById('activeFilterLabel');
+  const parts = [];
+  if (fm) parts.push('월: ' + fm.replace('2025-','25년 ').replace('2026-','26년 '));
+  if (fo) parts.push('조직: ' + fo);
+  if (fp) parts.push('직책: ' + fp);
+  if (fn) parts.push('이름: ' + fn);
+  if (parts.length) { bar.style.display='flex'; label.textContent = '🔍 ' + parts.join(' · '); }
+  else { bar.style.display='none'; }
 }
 function resetFilter() {
-  ['f-month', 'f-org', 'f-pos'].forEach(id => document.getElementById(id).value = '');
+  ['f-month','f-org','f-pos'].forEach(id => document.getElementById(id).value='');
   document.getElementById('f-name').value = '';
+  document.getElementById('activeFilterBar').style.display='none';
   applyFilter();
+  if (window.updateAnomalyOrgChart) updateAnomalyOrgChart(null);
 }
 function updateCount(n) {
   const el = document.getElementById('anomaly-count');
@@ -1549,6 +1588,32 @@ async function exportReasons() {
    비용 현황 데이터 & 차트
 ═══════════════════════════════════════ */
 const COST_MONTHS = ['25.12월','26.1월','26.2월','26.3월','26.4월'];
+
+/* 균등 Y축 헬퍼 (전역) */
+function niceStep(maxVal) {
+  if (!maxVal || maxVal <= 0) return 100000;
+  const raw = maxVal / 5; // 눈금 5개 목표
+  const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const norm = raw / mag;
+  if (norm <= 1) return mag;
+  if (norm <= 2) return 2 * mag;
+  if (norm <= 5) return 5 * mag;
+  return 10 * mag;
+}
+function niceMax(maxVal, step) { return Math.ceil(maxVal / step) * step; }
+function mkYNice(maxVal, fmtFn) {
+  const step = niceStep((maxVal || 1) * 1.25);
+  const max  = niceMax((maxVal || 1) * 1.25, step);
+  return {
+    min:0, max,
+    grid:{color:'rgba(0,0,0,0.05)'},
+    ticks:{font:{size:12}, stepSize:step,
+      callback: fmtFn || (v => v%step===0
+        ? (v>=1000000 ? (v/1000000).toFixed(0)+'M' : v>=10000 ? Math.round(v/10000)+'만' : v)
+        : null)
+    }
+  };
+}
 
 // 비용 데이터 (엑셀 2번째 시트 파싱)
 let costData = {
@@ -1598,7 +1663,7 @@ function parseCostSheet(wb) {
   const sheetName = wb.SheetNames.find(n => n.includes('비용'));
   if (!sheetName) return;
   const ws = wb.Sheets[sheetName];
-  const raw = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
+  const raw = XLSX.utils.sheet_to_json(ws, {header:1, defval:null, cellDates:true});
 
   const MONTHS_COLS = 8; // 월 컬럼 수 (최대)
   let mLabels = [];
@@ -1759,38 +1824,70 @@ function renderCostCharts() {
   document.getElementById('ck2sub').textContent='공통운영비 가용예산 잔액';
   document.getElementById('ck3').textContent = latestCafe.toLocaleString()+'원';
   document.getElementById('ck3sub').textContent='전월 대비 '+(latestCafe-prevCafe>=0?'+':'')+(latestCafe-prevCafe).toLocaleString()+'원';
-  document.getElementById('ck4').textContent = latestAsset?latestAsset.toLocaleString()+'원':'—';
-  document.getElementById('ck4sub').textContent='최근월 Asset 구매 합계';
+  const latestOt2 = Object.values(costData.ot).reduce((s,arr)=>s+(arr[lastIdx]||0),0);
+  document.getElementById('ck4').textContent = latestOt2?latestOt2.toLocaleString()+'원':'—';
+  document.getElementById('ck4sub').textContent='최근월 야근교통비 합계';
 
   const mkX=()=>({grid:{display:false},ticks:{font:{size:11}}});
+
   const mkYWon=(max)=>({
     min:0,max,grid:{color:'rgba(0,0,0,0.05)'},
     ticks:{font:{size:11},callback:v=>v>=1000000?(v/1000000).toFixed(0)+'M':v>=10000?Math.round(v/10000)+'만':v||''}
   });
   const nonZeroMax=(...arrs)=>Math.max(...arrs.map(a=>Array.isArray(a)?Math.max(...a.map(v=>v||0)):0).filter(v=>v>0),1);
 
-  // 1. 조직별 요약 - Asset + OT + 공통운영비 묶음 막대
+  // 1. 조직별 요약 - Asset 단독 / OT+공통 별도 (단위 차이로 분리)
   const teamOrgs = Object.keys(costData.teamSummary);
   document.getElementById('teamSummaryTitle').textContent=`조직별 비용 사용내역 (${mLabels[lastIdx]})`;
-  if(costCharts['teamSummary'])costCharts['teamSummary'].destroy();
-  costCharts['teamSummary'] = new Chart(document.getElementById('teamSummaryChart'),{
+
+  // 1-a. Asset 구매
+  if(costCharts['teamSummaryAsset'])costCharts['teamSummaryAsset'].destroy();
+  costCharts['teamSummaryAsset'] = new Chart(document.getElementById('teamSummaryAssetChart'),{
     type:'bar', plugins:[costLabelPlugin],
     data:{
       labels:teamOrgs,
-      datasets:[
-        {label:'Asset구매', data:teamOrgs.map(o=>costData.teamSummary[o]?.asset||0), backgroundColor:'#3949ABCC', borderRadius:4, borderSkipped:false},
-        {label:'야근교통비', data:teamOrgs.map(o=>costData.teamSummary[o]?.ot||0), backgroundColor:'#D85A30CC', borderRadius:4, borderSkipped:false},
-        {label:'공통운영비', data:teamOrgs.map(o=>costData.teamSummary[o]?.common||0), backgroundColor:'#1D9E75CC', borderRadius:4, borderSkipped:false},
-      ]
+      datasets:[{label:'Asset구매', data:teamOrgs.map(o=>costData.teamSummary[o]?.asset||0),
+        backgroundColor:'#3949ABCC', borderRadius:4, borderSkipped:false}]
     },
     options:{
       responsive:true, maintainAspectRatio:false, layout:{padding:{top:22}},
-      plugins:{
-        legend:{display:true,position:'top',labels:{font:{size:11},boxWidth:12}},
-        costLabel:{},
-        tooltip:{callbacks:{label:c=>c.dataset.label+': '+c.parsed.y.toLocaleString()+'원'}}
-      },
-      scales:{x:mkX(), y:mkYWon(nonZeroMax(...teamOrgs.map(o=>(costData.teamSummary[o]?.asset||0)+(costData.teamSummary[o]?.ot||0)+(costData.teamSummary[o]?.common||0)))*1.25)}
+      plugins:{legend:{display:false},costLabel:{},tooltip:{callbacks:{label:c=>c.dataset.label+': '+c.parsed.y.toLocaleString()+'원'}}},
+      scales:{x:mkX(), y:mkYWon(nonZeroMax(teamOrgs.map(o=>costData.teamSummary[o]?.asset||0))*1.3||1000000)}
+    }
+  });
+
+  // 1-b. 야근교통비 (단독)
+  if(costCharts['teamSummaryOt'])costCharts['teamSummaryOt'].destroy();
+  costCharts['teamSummaryOt'] = new Chart(document.getElementById('teamSummaryOtChart'),{
+    type:'bar', plugins:[costLabelPlugin],
+    data:{
+      labels:teamOrgs,
+      datasets:[{label:'야근교통비', data:teamOrgs.map(o=>costData.teamSummary[o]?.ot||0),
+        backgroundColor:'#D85A30CC', borderRadius:3, borderSkipped:false}]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false, layout:{padding:{top:20}},
+      plugins:{legend:{display:false},costLabel:{},tooltip:{callbacks:{label:c=>c.parsed.y.toLocaleString()+'원'}}},
+      scales:{x:mkX(), y:mkYNice(nonZeroMax(teamOrgs.map(o=>costData.teamSummary[o]?.ot||0))||30000)}
+    }
+  });
+
+  // 1-c. 공통운영비 (단독)
+  if(costCharts['teamSummaryCommon'])costCharts['teamSummaryCommon'].destroy();
+  costCharts['teamSummaryCommon'] = new Chart(document.getElementById('teamSummaryCommonChart'),{
+    type:'bar', plugins:[costLabelPlugin],
+    data:{
+      labels:teamOrgs,
+      datasets:[{label:'공통운영비', data:teamOrgs.map(o=>costData.teamSummary[o]?.common||0),
+        backgroundColor:'#1D9E75CC', borderRadius:3, borderSkipped:false}]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false, layout:{padding:{top:20}},
+      plugins:{legend:{display:false},costLabel:{},tooltip:{callbacks:{label:c=>c.parsed.y.toLocaleString()+'원'}}},
+      scales:{x:mkX(), y:{min:0, max:1500000,
+        grid:{color:'rgba(0,0,0,0.05)'},
+        ticks:{font:{size:12}, stepSize:500000, callback:v=>v===0?'0':v===500000?'50만':v===1000000?'1M':v===1500000?'1.5M':null}
+      }}
     }
   });
 
@@ -1807,7 +1904,7 @@ function renderCostCharts() {
     }))},
     options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:22}},
       plugins:{legend:{display:false},costLabel:{},tooltip:{callbacks:{label:c=>c.dataset.label+': '+c.parsed.y.toLocaleString()+'원'}}},
-      scales:{x:mkX(),y:mkYWon(nonZeroMax(...Object.values(costData.ot))*1.35||30000)}
+      scales:{x:mkX(),y:mkYNice((nonZeroMax(...Object.values(costData.ot))||30000)*1.0)}
     }
   });
 
@@ -1824,7 +1921,7 @@ function renderCostCharts() {
     }))},
     options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:22}},
       plugins:{legend:{display:false},costLabel:{},tooltip:{callbacks:{label:c=>c.dataset.label+': '+c.parsed.y.toLocaleString()+'원'}}},
-      scales:{x:mkX(),y:mkYWon(nonZeroMax(...Object.values(costData.common.byOrg))*1.35||500000)}
+      scales:{x:mkX(),y:mkYNice((nonZeroMax(...Object.values(costData.common.byOrg))||500000)*1.0)}
     }
   });
 
@@ -1844,28 +1941,7 @@ function renderCostCharts() {
           return row;
         }}}
       },
-      scales:{x:mkX(),y:mkYWon(nonZeroMax(costData.common.used,costData.common.budget.map(v=>v||0))*1.25||1000000)}
-    }
-  });
-
-  // 5. Asset 팀별 막대 (최근월)
-  const assetOrgs=Object.keys(costData.asset||{});
-  document.getElementById('assetLg').innerHTML=assetOrgs.filter(o=>(costData.asset[o]||[]).some(v=>v>0))
-    .map(o=>`<div class="li"><div class="ld" style="background:${COST_ORG_COLORS[o]||'#888'}"></div>${o}</div>`).join('');
-  if(costCharts['asset'])costCharts['asset'].destroy();
-  costCharts['asset']=new Chart(document.getElementById('assetChart'),{
-    type:'bar', plugins:[costLabelPlugin],
-    data:{labels:mLabels, datasets:assetOrgs.map(org=>({
-      label:org, data:costData.asset[org],
-      backgroundColor:COST_ORG_COLORS[org]||'#888', borderRadius:4, borderSkipped:false
-    }))},
-    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:22}},
-      plugins:{
-        legend:{display:true,position:'top',labels:{font:{size:11},boxWidth:12,filter:i=>i.text&&(costData.asset[i.text]||[]).some(v=>v>0)}},
-        costLabel:{},
-        tooltip:{callbacks:{label:c=>c.dataset.label+': '+c.parsed.y.toLocaleString()+'원'}}
-      },
-      scales:{x:mkX(),y:mkYWon(nonZeroMax(...Object.values(costData.asset||{}))*1.25||1000000)}
+      scales:{x:mkX(),y:mkYNice(nonZeroMax(costData.common.used)||1000000)}
     }
   });
 
@@ -1885,7 +1961,7 @@ function renderCostCharts() {
         costLabel:{},
         tooltip:{callbacks:{label:c=>c.dataset.label+': '+c.parsed.y.toLocaleString()+'원'}}
       },
-      scales:{x:mkX(),y:mkYWon(nonZeroMax(...Object.values(costData.cafe))*1.3||1500000)}
+      scales:{x:mkX(),y:mkYNice(nonZeroMax(...Object.values(costData.cafe))||1500000)}
     }
   });
 }
@@ -1959,35 +2035,28 @@ window.__REASONS__     = ${JSON.stringify(reasons)};
 `;
       doc.head.appendChild(staticScript);
 
-      // 8. 정적 모드 초기화 스크립트 추가
+      // 8. 정적 모드 초기화 스크립트 추가 (문자열 연결로 backtick 충돌 방지)
       const initScript = doc.createElement('script');
-      initScript.textContent = `
-window.addEventListener('DOMContentLoaded', function() {
-  if (!window.__STATIC_MODE__) return;
-
-  // 드래그앤드롭 이벤트 무력화
-  ['dragenter','dragleave','dragover','drop'].forEach(ev =>
-    document.addEventListener(ev, e => e.preventDefault(), true)
-  );
-
-  // 저장된 사유/요약 복원
-  if (window.__REASONS__)   localStorage.setItem('hr_reasons_v3',   JSON.stringify(window.__REASONS__));
-  if (window.__SUMMARIES__) localStorage.setItem('hr_summary_v2', JSON.stringify(window.__SUMMARIES__));
-
-  // 비용 데이터 복원
-  if (window.__COST_DATA__) {
-    Object.assign(costData, window.__COST_DATA__);
-    while(COST_MONTHS.length) COST_MONTHS.pop();
-    (window.__COST_MONTHS__||[]).forEach(m => COST_MONTHS.push(m));
-  }
-
-  // 대시보드 렌더링
-  const d = window.__STATIC_DATA__;
-  if (!d) return;
-  d.anomaly = d.anomaly.map(a => ({...a, 날짜: new Date(a.날짜)}));
-  renderDashboard(d, '저장된 대시보드');
-});
-`;
+      const initCode = [
+        "window.addEventListener('DOMContentLoaded', function() {",
+        "  if (!window.__STATIC_MODE__) return;",
+        "  ['dragenter','dragleave','dragover','drop'].forEach(function(ev) {",
+        "    document.addEventListener(ev, function(e) { e.preventDefault(); }, true);",
+        "  });",
+        "  if (window.__REASONS__)   localStorage.setItem('hr_reasons_v3',   JSON.stringify(window.__REASONS__));",
+        "  if (window.__SUMMARIES__) localStorage.setItem('hr_summary_v2', JSON.stringify(window.__SUMMARIES__));",
+        "  if (window.__COST_DATA__) {",
+        "    Object.assign(costData, window.__COST_DATA__);",
+        "    while(COST_MONTHS.length) COST_MONTHS.pop();",
+        "    (window.__COST_MONTHS__||[]).forEach(function(m) { COST_MONTHS.push(m); });",
+        "  }",
+        "  var d = window.__STATIC_DATA__;",
+        "  if (!d) return;",
+        "  d.anomaly = d.anomaly.map(function(a) { return Object.assign({}, a, {날짜: new Date(a.날짜)}); });",
+        "  renderDashboard(d, '저장된 대시보드');",
+        "});"
+      ].join('\n');
+      initScript.textContent = initCode;
       doc.body.appendChild(initScript);
 
       // 9. HTML 문자열로 직렬화
@@ -2018,33 +2087,498 @@ window.addEventListener('DOMContentLoaded', function() {
   }, 100);
 }
 
+
+/* ═══════════════════════════════════════
+   코어타임 미준수 - 요약 차트 & 테이블 & 모달
+═══════════════════════════════════════ */
+let _anomalyCharts = {};
+
+function renderAnomalySummaryCharts(anomaly) {
+  const MONTHS_ORDER = ['2025-12','2026-01','2026-02','2026-03','2026-04'];
+
+  // 월별 건수
+  const monthCount = {};
+  MONTHS_ORDER.forEach(m => monthCount[m] = 0);
+  anomaly.forEach(r => { if (monthCount[r.월] !== undefined) monthCount[r.월]++; else monthCount[r.월] = 1; });
+  const mKeys = Object.keys(monthCount).sort();
+  const mVals = mKeys.map(m => monthCount[m]);
+
+  // 코어타임 미준수 - 건수 라벨 플러그인
+  const anomalyBarLabelPlugin = {
+    id:'anomalyBarLabel',
+    afterDatasetsDraw(chart){
+      const {ctx} = chart;
+      chart.data.datasets.forEach((ds,di)=>{
+        const meta = chart.getDatasetMeta(di);
+        if(meta.hidden) return;
+        meta.data.forEach((el,i)=>{
+          const val = ds.data[i];
+          if(!val) return;
+          ctx.save();
+          ctx.font='bold 11px Apple SD Gothic Neo,sans-serif';
+          ctx.fillStyle='#333';
+          ctx.textAlign='center';
+          ctx.textBaseline='bottom';
+          ctx.fillText(val+'건', el.x, el.y - 4);
+          ctx.restore();
+        });
+      });
+    }
+  };
+
+  if (_anomalyCharts['month']) _anomalyCharts['month'].destroy();
+  _anomalyCharts['month'] = new Chart(document.getElementById('anomalyMonthChart'), {
+    type: 'bar', plugins:[anomalyBarLabelPlugin],
+    data: {
+      labels: mKeys.map(m => mLabel(m)),
+      datasets: [{ label:'미준수 건수', data: mVals,
+        backgroundColor: mVals.map(v => v >= 10 ? '#C0392BAA' : '#3949ABAA'),
+        borderRadius: 6, borderSkipped: false }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, layout:{padding:{top:24}},
+      plugins: {
+        legend:{display:false},
+        anomalyBarLabel:{},
+        tooltip:{callbacks:{label:c=>c.parsed.y+'건'}},
+      },
+      scales: {
+        x:{grid:{display:false},ticks:{font:{size:11}}},
+        y:{min:0,grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:11},stepSize:1,callback:v=>Number.isInteger(v)?v+'건':null}}
+      },
+      onClick(e, els) {
+        if (!els.length) return;
+        const m = mKeys[els[0].index];
+        applyFilter(undefined, m);
+        document.getElementById('f-month').value = m;
+        updateAnomalyOrgChart(m);  // 도넛 연동
+      }
+    }
+  });
+
+  // 조직별 도넛
+  const orgCount = {};
+  anomaly.forEach(r => { orgCount[r.조직] = (orgCount[r.조직]||0) + 1; });
+  const orgKeys = Object.keys(orgCount).sort((a,b) => orgCount[b]-orgCount[a]);
+  const orgVals = orgKeys.map(o => orgCount[o]);
+  const orgColors = orgKeys.map(o => ORG_COLORS[o] || '#888');
+
+  if (_anomalyCharts['org']) _anomalyCharts['org'].destroy();
+  _anomalyCharts['org'] = new Chart(document.getElementById('anomalyOrgChart'), {
+    type: 'doughnut',
+    data: {
+      labels: orgKeys,
+      datasets: [{ data: orgVals, backgroundColor: orgColors, borderWidth: 2, borderColor: '#fff', hoverOffset: 8 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '62%',
+      plugins: {
+        legend:{display:false},
+        tooltip:{callbacks:{label:c=>`${c.label}: ${c.parsed}건 (${Math.round(c.parsed/anomaly.length*100)}%)`}}
+      },
+      onClick(e, els) {
+        if (!els.length) return;
+        const org = orgKeys[els[0].index];
+        applyFilter(org, undefined);
+        document.getElementById('f-org').value = org;
+      }
+    }
+  });
+
+  // 도넛 동적 업데이트 함수
+  window.updateAnomalyOrgChart = function(filterMonth) {
+    const data = filterMonth
+      ? (window._anomalyData||[]).filter(r => r.월 === filterMonth)
+      : (window._anomalyData||[]);
+    const orgCount = {};
+    data.forEach(r => { orgCount[r.조직] = (orgCount[r.조직]||0) + 1; });
+    const orgKeys = Object.keys(orgCount).sort((a,b) => orgCount[b]-orgCount[a]);
+    const chart = _anomalyCharts['org'];
+    if (!chart) return;
+    // 데이터 업데이트
+    chart.data.labels = orgKeys;
+    chart.data.datasets[0].data = orgKeys.map(o => orgCount[o]);
+    chart.data.datasets[0].backgroundColor = orgKeys.map(o => ORG_COLORS[o] || '#888');
+    chart.update();
+    // 범례도 갱신
+    const total = data.length;
+    const legend = document.getElementById('anomalyOrgLegend');
+    if (legend) {
+      legend.innerHTML = orgKeys.map((o,i) => `
+        <div onclick="applyFilter('${o}');document.getElementById('f-org').value='${o}'"
+             style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:2px 4px;border-radius:5px;transition:background .1s"
+             onmouseover="this.style.background='#F0F2FF'" onmouseout="this.style.background=''">
+          <div style="width:10px;height:10px;border-radius:2px;background:${ORG_COLORS[o]||'#888'};flex-shrink:0"></div>
+          <span style="color:#333">${o}</span>
+          <span style="color:#999;margin-left:auto;padding-left:6px">${orgCount[o]}건 (${Math.round(orgCount[o]/total*100)}%)</span>
+        </div>`).join('');
+    }
+    // 차트 제목 업데이트
+    const titleEl = document.querySelector('#page-anomaly .card:nth-child(2) .card-title');
+    if (titleEl) {
+      titleEl.innerHTML = filterMonth
+        ? `조직별 미준수 비율 <span style="font-size:11px;font-weight:400;color:#3949AB">${mLabel(filterMonth)} 기준</span> <span style="font-size:11px;font-weight:400;color:#AAA;cursor:pointer" onclick="updateAnomalyOrgChart(null);resetFilter()">전체보기</span>`
+        : `조직별 미준수 비율 <span style="font-size:11px;font-weight:400;color:#AAA">조직 클릭 시 필터</span>`;
+    }
+  };
+
+  // 커스텀 범례 (클릭 가능)
+  const legend = document.getElementById('anomalyOrgLegend');
+  legend.innerHTML = orgKeys.map((o,i) => `
+    <div onclick="applyFilter('${o}');document.getElementById('f-org').value='${o}'"
+         style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:2px 4px;border-radius:5px;transition:background .1s"
+         onmouseover="this.style.background='#F0F2FF'" onmouseout="this.style.background=''">
+      <div style="width:10px;height:10px;border-radius:2px;background:${orgColors[i]};flex-shrink:0"></div>
+      <span style="color:#333">${o}</span>
+      <span style="color:#999;margin-left:auto;padding-left:6px">${orgVals[i]}건</span>
+    </div>`).join('');
+}
+
+function renderAnomalyTable(anomaly) {
+  const reasons = loadReasons();
+  document.getElementById('anomalyTb').innerHTML = anomaly.map((r, i) => {
+    const isLate = r.late > 0, isEarly = r.early > 0;
+    const inStyle  = isLate  ? 'background:#FFF0EE;font-weight:700;color:#C0392B' : '';
+    const outStyle = isEarly ? 'background:#EEF2FF;font-weight:700;color:#3949AB' : '';
+    let vBadge = '';
+    if (r.late > 0)  vBadge += `<span class="vbadge vbadge-late">+${r.late}분</span> `;
+    if (r.early > 0) {
+      const h=Math.floor(r.early/60),mm=r.early%60;
+      vBadge += `<span class="vbadge vbadge-early">${h>0?h+'h ':' '}${mm}분↑</span>`;
+    }
+    return `<tr data-m="${r.월}" data-o="${r.조직}" data-p="${r.직책}" data-n="${r.이름}" style="${i%2===0?'background:#F8F9FF':''}">
+      <td><span class="name-link" onclick="openEmpModal('${r.이름}')">${r.이름}</span></td>
+      <td><span class="chip ${ORG_CHIP[r.조직]||'ce'}">${r.조직}</span></td>
+      <td class="ctr"><span class="chip ${POS_CHIP[r.직책]||'cm'}">${r.직책}</span></td>
+      <td class="ctr">${mLabel(r.월)}</td>
+      <td class="ctr">${r.dd}</td>
+      <td class="ctr" style="${inStyle}">${r.시작시각}</td>
+      <td class="ctr" style="${outStyle}">${r.종료시각}</td>
+      <td class="ctr" style="white-space:normal">${vBadge}</td>
+    </tr>`;
+  }).join('');
+  updateCount();
+}
+
+/* ── 직원 모달 ── */
+let _modalChart = null;
+function openEmpModal(name) {
+  const anomaly = window._anomalyData || [];
+  const empRows = anomaly.filter(r => r.이름 === name);
+  if (!empRows.length) return;
+
+  const reasons = loadReasons();
+  const org = empRows[0].조직;
+  const pos = empRows[0].직책;
+  const totalMin = empRows.reduce((s,r) => s + (r.late||0) + (r.early||0), 0);
+  const lateCount  = empRows.filter(r=>r.late>0).length;
+  const earlyCount = empRows.filter(r=>r.early>0).length;
+
+  document.getElementById('modalTitle').innerHTML =
+    `<span class="chip ${ORG_CHIP[org]||'ce'}" style="margin-right:8px">${org}</span>${name}`;
+
+  document.getElementById('modalStats').innerHTML = `
+    <div class="modal-stat">
+      <div class="modal-stat-val">${empRows.length}</div>
+      <div class="modal-stat-label">총 미준수 건수</div>
+    </div>
+    <div class="modal-stat">
+      <div class="modal-stat-val" style="color:#C0392B">${lateCount}</div>
+      <div class="modal-stat-label">지각 건수</div>
+    </div>
+    <div class="modal-stat">
+      <div class="modal-stat-val" style="color:#3949AB">${earlyCount}</div>
+      <div class="modal-stat-label">조기퇴근 건수</div>
+    </div>`;
+
+  // 월별 미니 차트
+  const MONTHS_ORDER = ['2025-12','2026-01','2026-02','2026-03','2026-04'];
+  const monthCount = {};
+  MONTHS_ORDER.forEach(m=>monthCount[m]=0);
+  empRows.forEach(r=>{ if(monthCount[r.월]!==undefined) monthCount[r.월]++; else monthCount[r.월]=1; });
+  const mKeys = Object.keys(monthCount).filter(m=>monthCount[m]>0||MONTHS_ORDER.includes(m)).sort();
+
+  if (_modalChart) _modalChart.destroy();
+  _modalChart = new Chart(document.getElementById('modalMiniChart'), {
+    type:'bar',
+    data:{
+      labels: mKeys.map(m=>mLabel(m)),
+      datasets:[{data:mKeys.map(m=>monthCount[m]||0),
+        backgroundColor:mKeys.map(m=>(monthCount[m]||0)>2?'#C0392BAA':'#3949ABAA'),
+        borderRadius:4,borderSkipped:false}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.y+'건'}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:10}}},
+              y:{min:0,grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:10},stepSize:1,callback:v=>Number.isInteger(v)?v:null}}}
+    }
+  });
+
+  // 이력 테이블
+  document.getElementById('modalTableBody').innerHTML = empRows.map(r => {
+    const key = getKey(r.이름, r.월, r.dd);
+    const saved = reasons[key] || '';
+    let vBadge='';
+    if(r.late>0)  vBadge+=`<span class="vbadge vbadge-late">+${r.late}분</span> `;
+    if(r.early>0){const h=Math.floor(r.early/60),mm=r.early%60;vBadge+=`<span class="vbadge vbadge-early">${h>0?h+'h ':' '}${mm}분↑</span>`;}
+    return `<tr>
+      <td>${mLabel(r.월)}</td>
+      <td class="ctr">${r.dd}</td>
+      <td class="ctr" style="${r.late>0?'color:#C0392B;font-weight:700':''}">${r.시작시각}</td>
+      <td class="ctr" style="${r.early>0?'color:#3949AB;font-weight:700':''}">${r.종료시각}</td>
+      <td class="ctr">${vBadge}</td>
+      <td><div style="display:flex;align-items:center;gap:3px">
+        <textarea class="modal-reason-input ${saved?'saved':''}" id="mreason_${key}" rows="1"
+          placeholder="사유..."
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();saveModalReason('${key}')}"
+        >${saved}</textarea>
+        <button class="modal-save-btn" onclick="saveModalReason('${key}')">저장</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('empModal').style.display = 'flex';
+}
+
+function saveModalReason(key) {
+  const el = document.getElementById('mreason_' + key);
+  if (!el) return;
+  saveReason(key, el.value);
+  el.classList.add('saved');
+  // 메인 테이블의 사유란도 동기화
+  const mainEl = document.getElementById('reason_' + key);
+  if (mainEl) { mainEl.value = el.value; mainEl.classList.add('saved'); }
+  const btn = el.nextElementSibling;
+  if (btn){btn.textContent='✓';btn.style.background='#1D9E75';setTimeout(()=>{btn.textContent='저장';btn.style.background='#3949AB'},1200);}
+}
+
+function closeEmpModal(e) {
+  if (e.target === document.getElementById('empModal')) {
+    document.getElementById('empModal').style.display = 'none';
+  }
+}
+
+
+/* ═══════════════════════════════════════
+   초과근로수당 데이터 & 렌더링
+═══════════════════════════════════════ */
+let otAllowData = {
+  records: [],      // {이름, 조직, 직책, 초과근로월, 지급월, 수당}
+  months: [],       // 초과근로 발생월 목록 (정렬)
+  byMonth: {},      // {월: {총액, 인원, 인당}}
+  byOrg: {},        // {조직: {인원, 금액}}
+  byOrgMonth: {},   // {조직: {월: {인원, 금액}}}
+};
+const otAllowCharts = {};
+
+/* 3번째 시트 파싱 - 셀 직접 접근으로 날짜 정확히 읽기 */
+function parseOtAllowSheet(wb) {
+  const sheetName = wb.SheetNames.find(n => n.includes('초과근로') || n.includes('수당'));
+  if (!sheetName) return;
+  const ws = wb.Sheets[sheetName];
+  const range = XLSX.utils.decode_range(ws['!ref'] || 'A1:M20');
+  const records = [];
+  const allMonths = [];
+  let currentMonth = null;
+
+  for (let r = range.s.r; r <= range.e.r; r++) {
+    const cellA = ws[XLSX.utils.encode_cell({r:r, c:0})];
+    const cellB = ws[XLSX.utils.encode_cell({r:r, c:1})];
+
+    if (cellA && cellA.v != null) {
+      let ym = null;
+      const v = cellA.v;
+      const s = String(v).trim();
+
+      // 1) "YYYY-MM" 또는 "YYYY-MM-DD" 텍스트
+      if (/^\d{4}-\d{2}/.test(s)) {
+        ym = s.slice(0, 7); // YYYY-MM만 추출
+      }
+      // 2) Date 객체 → 로컬+UTC 중 더 큰 월 사용 (밀림 방지)
+      else if (v instanceof Date) {
+        const local = v.getFullYear() + '-' + String(v.getMonth()+1).padStart(2,'0');
+        const utc   = v.getUTCFullYear() + '-' + String(v.getUTCMonth()+1).padStart(2,'0');
+        ym = local > utc ? local : utc; // 더 나중 달 선택
+      }
+      // 3) 숫자 serial → 12시간 보정으로 날짜 밀림 방지
+      else if (typeof v === 'number' && v > 40000) {
+        const d = new Date(Math.round((v - 25569) * 86400 * 1000) + 43200000);
+        ym = d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0');
+      }
+      // 4) w(표시값) fallback
+      else if (cellA.w && /^\d{4}/.test(cellA.w)) {
+        ym = cellA.w.slice(0,7).replace(/[^\d-]/g,'-').slice(0,7);
+      }
+
+      if (ym && ym !== '발생연월' && ym !== '발생연열') {
+        currentMonth = ym;
+        if (!allMonths.includes(currentMonth)) allMonths.push(currentMonth);
+      }
+    }
+
+    if (!cellB || !currentMonth) continue;
+    const sabunStr = String(cellB.v || '').replace('.0','').trim();
+    if (!/^[0-9]+$/.test(sabunStr)) continue;
+
+    function getCell(c) {
+      const cell = ws[XLSX.utils.encode_cell({r:r, c:c})];
+      return cell ? String(cell.v||'').trim() : '';
+    }
+    function getNum(c) {
+      const cell = ws[XLSX.utils.encode_cell({r:r, c:c})];
+      return cell ? Number(cell.v)||0 : 0;
+    }
+
+    const name = getCell(2);
+    const org  = getCell(7);
+    const pos  = getCell(10);
+    const pay  = getNum(12);
+    if (!name || !pay) continue;
+    records.push({ '이름': name, '조직': org, '직책': pos, '초과근로월': currentMonth, '수당': pay });
+  }
+
+  // 집계
+  const byMonth = {}, byOrg = {}, byOrgMonth = {};
+  records.forEach(r => {
+    const m = r.초과근로월;
+    if (!byMonth[m]) byMonth[m] = {총액:0, 인원:0};
+    byMonth[m].총액 += r.수당;
+    byMonth[m].인원++;
+
+    if (!byOrg[r.조직]) byOrg[r.조직] = {인원:0, 금액:0};
+    byOrg[r.조직].인원++;
+    byOrg[r.조직].금액 += r.수당;
+
+    if (!byOrgMonth[r.조직]) byOrgMonth[r.조직] = {};
+    if (!byOrgMonth[r.조직][m]) byOrgMonth[r.조직][m] = {인원:0, 금액:0};
+    byOrgMonth[r.조직][m].인원++;
+    byOrgMonth[r.조직][m].금액 += r.수당;
+  });
+  Object.keys(byMonth).forEach(m => {
+    byMonth[m].인당 = Math.round(byMonth[m].총액 / byMonth[m].인원);
+  });
+
+  // allMonths: 시트 순서 유지 (빈 월도 포함), byMonth에 없는 월은 0으로
+  const sortedMonths = allMonths.length ? allMonths : Object.keys(byMonth).sort();
+  sortedMonths.forEach(m => { if (!byMonth[m]) byMonth[m] = {총액:0, 인원:0, 인당:0}; });
+
+  otAllowData = {
+    records,
+    months: sortedMonths,
+    byMonth, byOrg, byOrgMonth
+  };
+}
+
+/* 초과근로수당 렌더링 */
+function renderOtAllow() {
+  const { records, months, byMonth, byOrg, byOrgMonth } = otAllowData;
+  if (!records.length) {
+    document.getElementById('otAllowanceSection').style.display = 'none';
+    return;
+  }
+  document.getElementById('otAllowanceSection').style.display = 'block';
+
+  // 최근월 KPI
+  const latestM = months[months.length - 1];
+  const latest = byMonth[latestM];
+  document.getElementById('otAllow-total').textContent = latest.총액.toLocaleString() + '원';
+  document.getElementById('otAllow-month').textContent = mLabel(latestM) + ' 초과근로';
+  document.getElementById('otAllow-count').textContent = latest.인원;
+  // 인당 평균 수당 KPI 제거됨
+
+  const mkX = () => ({grid:{display:false}, ticks:{font:{size:11}}});
+  const mkYWon = max => ({
+    min:0, max,
+    grid:{color:'rgba(0,0,0,0.05)'},
+    ticks:{font:{size:11}, callback:v => v>=10000 ? Math.round(v/10000)+'만' : v||''}
+  });
+
+  // 월별 지급액 추이
+  if (otAllowCharts['month']) otAllowCharts['month'].destroy();
+  otAllowCharts['month'] = new Chart(document.getElementById('otAllowMonthChart'), {
+    type:'bar',
+    data:{
+      labels: months.map(m => mLabel(m)),
+      datasets:[{
+        label:'지급액',
+        data: months.map(m => byMonth[m].총액),
+        backgroundColor:'#3949ABAA', borderRadius:6, borderSkipped:false
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false, layout:{padding:{top:22}},
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:c=>c.parsed.y.toLocaleString()+'원 / '+byMonth[months[c.dataIndex]].인원+'명'}}
+      },
+      scales:{ x:mkX(), y:mkYNice(Math.max(...months.map(m=>byMonth[m].총액))||30000) }
+    }
+  });
+
+  // 조직별 도넛
+  const orgKeys = Object.keys(byOrg).sort((a,b) => byOrg[b].금액 - byOrg[a].금액);
+  const orgVals = orgKeys.map(o => byOrg[o].금액);
+  const orgColors = orgKeys.map(o => ORG_COLORS[o] || '#888');
+
+  if (otAllowCharts['org']) otAllowCharts['org'].destroy();
+  otAllowCharts['org'] = new Chart(document.getElementById('otAllowOrgChart'), {
+    type:'doughnut',
+    data:{
+      labels: orgKeys,
+      datasets:[{ data:orgVals, backgroundColor:orgColors, borderWidth:2, borderColor:'#fff', hoverOffset:6 }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false, cutout:'62%',
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:c=>`${c.label}: ${c.parsed.toLocaleString()}원 (${c.raw.toLocaleString()}원)`}}
+      }
+    }
+  });
+
+  // 조직별 범례
+  document.getElementById('otAllowOrgLegend').innerHTML = orgKeys.map((o,i) =>
+    `<div style="display:flex;align-items:center;gap:6px;white-space:nowrap">
+      <div style="width:10px;height:10px;border-radius:2px;background:${orgColors[i]};flex-shrink:0"></div>
+      <span style="color:#333;font-size:11px">${o}</span>
+      <span style="color:#999;padding-left:4px;font-size:11px">${byOrg[o].금액.toLocaleString()}원</span>
+    </div>`).join('');
+
+  // 조직별 상세 테이블
+  const rows = [];
+  orgKeys.forEach(org => {
+    Object.keys(byOrgMonth[org]||{}).sort().forEach(m => {
+      const d = byOrgMonth[org][m];
+      rows.push({ org, m, 인원:d.인원, 금액:d.금액, 인당:Math.round(d.금액/d.인원) });
+    });
+  });
+  document.getElementById('otAllowTb').innerHTML = rows.map((r,i) =>
+    `<tr style="${i%2===0?'background:#F8F9FF':''}">
+      <td><span class="chip ${ORG_CHIP[r.org]||'ce'}">${r.org}</span></td>
+      <td class="ctr">${mLabel(r.m)}</td>
+      <td class="num">${r.인원}명</td>
+      <td class="num" style="font-weight:600">${r.금액.toLocaleString()}원</td>
+      <td class="num">${r.인당.toLocaleString()}원</td>
+    </tr>`).join('');
+}
+
 </script>
 
 
-<script>
-window.addEventListener('DOMContentLoaded', function() {
+<script>window.addEventListener('DOMContentLoaded', function() {
   if (!window.__STATIC_MODE__) return;
-
-  // 드래그앤드롭 이벤트 무력화
-  ['dragenter','dragleave','dragover','drop'].forEach(ev =>
-    document.addEventListener(ev, e => e.preventDefault(), true)
-  );
-
-  // 저장된 사유/요약 복원
+  ['dragenter','dragleave','dragover','drop'].forEach(function(ev) {
+    document.addEventListener(ev, function(e) { e.preventDefault(); }, true);
+  });
   if (window.__REASONS__)   localStorage.setItem('hr_reasons_v3',   JSON.stringify(window.__REASONS__));
   if (window.__SUMMARIES__) localStorage.setItem('hr_summary_v2', JSON.stringify(window.__SUMMARIES__));
-
-  // 비용 데이터 복원
   if (window.__COST_DATA__) {
     Object.assign(costData, window.__COST_DATA__);
     while(COST_MONTHS.length) COST_MONTHS.pop();
-    (window.__COST_MONTHS__||[]).forEach(m => COST_MONTHS.push(m));
+    (window.__COST_MONTHS__||[]).forEach(function(m) { COST_MONTHS.push(m); });
   }
-
-  // 대시보드 렌더링
-  const d = window.__STATIC_DATA__;
+  var d = window.__STATIC_DATA__;
   if (!d) return;
-  d.anomaly = d.anomaly.map(a => ({...a, 날짜: new Date(a.날짜)}));
+  d.anomaly = d.anomaly.map(function(a) { return Object.assign({}, a, {날짜: new Date(a.날짜)}); });
   renderDashboard(d, '저장된 대시보드');
-});
-</script></body></html>
+});</script></body></html>
